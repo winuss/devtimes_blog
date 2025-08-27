@@ -28,7 +28,7 @@ const PostListPage = async ({ category, page = 1, pageSize = 12, tag, q }: PostL
             검색
           </button>
         </form>
-        <TagFilter currentTag={tag} />
+        <TagFilter />
         <PostListClient />
       </section>
     </section>
