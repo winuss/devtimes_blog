@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 
-import PostListPage from '@/components/post_list/PostListPage';
+import { redirect } from 'next/navigation';
 import { baseDomain, blogName, blogThumbnailURL } from '@/config/const';
 import { getCategoryList, getCategoryPublicName } from '@/lib/post';
 
@@ -39,14 +39,26 @@ export async function generateMetadata({ params: { category } }: Props): Promise
 }
 
 const CategoryPage = async ({ params, searchParams }: Props) => {
-  const page = Number(searchParams?.page || '1');
-  const tag = searchParams?.tag;
-  const q = searchParams?.q;
-  return (
-    <div className='bg-[#f9fafb]'>
-      <PostListPage category={params.category} page={page} tag={tag} q={q} />
-    </div>
-  );
+  const categoryToTag: Record<string, string> = {
+    react: 'react',
+    python: 'python',
+    ops: 'ops',
+    javascript: 'javascript',
+    ai: 'ai',
+    angular: 'angular',
+    datalake: 'datalake',
+  };
+
+  const { category } = params;
+  const mappedTag = categoryToTag[category];
+
+  const qs = new URLSearchParams();
+  if (searchParams?.q) qs.set('q', searchParams.q);
+  if (searchParams?.tag) qs.set('tag', searchParams.tag);
+  else if (mappedTag) qs.set('tag', mappedTag);
+
+  const target = qs.toString() ? `/?${qs.toString()}` : '/';
+  redirect(target);
 };
 
 export default CategoryPage;

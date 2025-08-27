@@ -21,7 +21,7 @@ type SearchIndexPost = {
 
 const PAGE_SIZE = 12;
 
-export default function PostListClient({ category }: { category?: string }) {
+export default function PostListClient() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -55,11 +55,11 @@ export default function PostListClient({ category }: { category?: string }) {
   }, []);
 
   const filtered = useMemo(() => {
-    const byCategory = (p: SearchIndexPost) => (category ? p.categoryPath === category : true);
+    const byCategory = () => true;
     const byTag = (p: SearchIndexPost) => (tag ? (p.tags || []).map((t) => t.toLowerCase()).includes(tag.toLowerCase()) : true);
     const byQuery = (p: SearchIndexPost) => (q ? p.searchText.toLowerCase().includes(q.toLowerCase()) : true);
-    return allPosts.filter((p) => byCategory(p) && byTag(p) && byQuery(p));
-  }, [allPosts, category, tag, q]);
+    return allPosts.filter((p) => byCategory() && byTag(p) && byQuery(p));
+  }, [allPosts, tag, q]);
 
   const sorted = useMemo(() => {
     // 작성일 최신순 정렬 (내림차순)

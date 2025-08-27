@@ -10,6 +10,7 @@
     "start": "next start",
     "lint": "next lint",
     "build-posts": "pnpm run copy-images && pnpm run process-posts",
+    "add-missing-tags": "node scripts/add-missing-tags.js",
     "copy-images": "node scripts/copy-images.js",
     "process-posts": "node scripts/process-posts.js"
   },

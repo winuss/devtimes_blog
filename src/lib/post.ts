@@ -1,4 +1,4 @@
-import { CategoryDetail, HeadingItem, Post, PostMatter } from '@/config/types';
+import { HeadingItem, Post, PostMatter } from '@/config/types';
 import dayjs from 'dayjs';
 import fs from 'fs';
 import { sync } from 'glob';
@@ -10,9 +10,8 @@ const BASE_PATH = 'src/posts';
 const POSTS_PATH = path.join(process.cwd(), BASE_PATH);
 
 // 모든 MDX 파일 조회
-export const getPostPaths = (category?: string) => {
-  const folder = category || '**';
-  const postPaths: string[] = sync(`${POSTS_PATH}/${folder}/**/*.mdx`);
+export const getPostPaths = () => {
+  const postPaths: string[] = sync(`${POSTS_PATH}/**/*.mdx`);
   return postPaths;
 };
 
@@ -113,27 +112,26 @@ const sortPostList = (PostList: Post[]) => {
 };
 
 // 모든 포스트 목록 조회. 블로그 메인 페이지에서 사용
-export const getPostList = async (category?: string): Promise<Post[]> => {
-  const postPaths = getPostPaths(category);
+export const getPostList = async (): Promise<Post[]> => {
+  const postPaths = getPostPaths();
   const postList = await Promise.all(postPaths.map((postPath) => parsePost(postPath)));
   return postList;
 };
 
-export const getSortedPostList = async (category?: string) => {
-  const postList = await getPostList(category);
+export const getSortedPostList = async () => {
+  const postList = await getPostList();
   return sortPostList(postList);
 };
 
 export type PostQuery = {
   page?: number;
   pageSize?: number;
-  category?: string;
   tag?: string;
   q?: string;
 };
 
-export const queryPosts = async ({ page = 1, pageSize = 12, category, tag, q }: PostQuery) => {
-  const all = await getSortedPostList(category);
+export const queryPosts = async ({ page = 1, pageSize = 12, tag, q }: PostQuery) => {
+  const all = await getSortedPostList();
 
   const filtered = all.filter((p) => {
     const byTag = tag ? (p.tags || []).map((t) => t.toLowerCase()).includes(tag.toLowerCase()) : true;
@@ -199,32 +197,10 @@ export const getSitemapPostList = async () => {
   return sitemapPostList;
 };
 
-export const getAllPostCount = async () => (await getPostList()).length;
-
 export const getCategoryList = () => {
   const cgPaths: string[] = sync(`${POSTS_PATH}/*`);
   const cgList = cgPaths.map((p) => p.split(path.sep).slice(-1)?.[0]);
   return cgList;
-};
-
-export const getCategoryDetailList = async () => {
-  const postList = await getPostList();
-  const result: { [key: string]: number } = {};
-  for (const post of postList) {
-    const category = post.categoryPath;
-    if (result[category]) {
-      result[category] += 1;
-    } else {
-      result[category] = 1;
-    }
-  }
-  const detailList: CategoryDetail[] = Object.entries(result).map(([category, count]) => ({
-    dirName: category,
-    publicName: getCategoryPublicName(category),
-    count,
-  }));
-
-  return detailList;
 };
 
 // post 상세 페이지 내용 조회
