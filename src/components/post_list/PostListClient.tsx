@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import dayjs from 'dayjs';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import PostCard from './PostCard';
+import PostCardSkeleton from './PostCardSkeleton';
 import Pagination from './Pagination';
 
 type SearchIndexPost = {
@@ -95,7 +96,21 @@ export default function PostListClient() {
     return (lastSpace > 0 ? sliced.slice(0, lastSpace) : sliced).concat('…');
   };
 
-  if (isLoading) return <div className='py-10 text-sm text-gray-500'>로딩 중…</div>;
+  if (isLoading)
+    return (
+      <section>
+        <div className='mb-4 flex items-center justify-between'>
+          <div className='flex flex-wrap items-center gap-2 text-xs text-gray-500'>
+            <span className='rounded-full bg-gray-50 px-2 py-1 dark:bg-slate-800'>로딩 중…</span>
+          </div>
+        </div>
+        <ul className='grid grid-cols-1 gap-8'>
+          {Array.from({ length: 6 }).map((_, idx) => (
+            <PostCardSkeleton key={idx} />
+          ))}
+        </ul>
+      </section>
+    );
   if (error) return <div className='py-10 text-sm text-red-500'>검색 인덱스를 불러오지 못했습니다: {error}</div>;
 
   const hasFilters = Boolean(q || tag);
