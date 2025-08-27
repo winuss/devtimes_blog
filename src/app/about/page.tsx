@@ -107,7 +107,7 @@ export default async function AboutPage() {
                 <h3 className='text-lg font-semibold'>Intro</h3>
                 <CardDescription>
                   <span className='block'>Hi, I&apos;m <b>Yoo, Seongsu</b></span>
-                  <span className='block'>Fullstack Developer 🚀 from Korea</span>
+                  <span className='block'>Fe Developer 🚀 from Korea</span>
                 </CardDescription>
               </CardHeader>
               <CardContent className='space-y-2 text-sm text-muted-foreground'>

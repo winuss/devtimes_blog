@@ -21,13 +21,15 @@ const mainHome = {
 }
 
 export const Header = () => {
+  const pathname = usePathname();
+  const isMainList = pathname === '/';
   const { ref, marginTop } = useSpyElem(65);
 
   return (
     <nav
-      style={{ marginTop }}
+      style={{ marginTop: isMainList ? marginTop : 0 }}
       ref={ref}
-      className='fixed z-40 flex w-full flex-col items-center justify-center border-b bg-background shadow-sm print:hidden'
+      className={`${isMainList ? 'fixed' : 'static'} z-40 flex w-full flex-col items-center justify-center border-b bg-white shadow-sm print:hidden`}
     >
       <div className='mt-1 flex h-[64px] w-full max-w-[1200px] items-center justify-between px-4'>
         <div className='flex items-center font-medium'>

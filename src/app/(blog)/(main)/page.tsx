@@ -12,7 +12,11 @@ const Blog = async ({ searchParams }: Props) => {
   const tag = searchParams?.tag;
   const q = searchParams?.q;
   if (Number.isNaN(page) || page < 1) redirect('/');
-  return <PostListPage page={page} tag={tag} q={q} />;
+  return (
+    <div className='bg-[#f9fafb]'>
+      <PostListPage page={page} tag={tag} q={q} />
+    </div>
+  );
 };
 
 export default Blog;

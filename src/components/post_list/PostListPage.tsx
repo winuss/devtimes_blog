@@ -28,7 +28,7 @@ const PostListPage = async ({ category, page = 1, pageSize = 12, tag, q }: PostL
             name='q'
             defaultValue={q}
             placeholder='검색어를 입력하세요'
-            className='w-full rounded-md border px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:focus:ring-slate-700'
+            className='w-full rounded-md border bg-white px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:bg-white dark:text-black'
           />
           {category ? <input type='hidden' name='category' value={category} /> : null}
           {tag ? <input type='hidden' name='tag' value={tag} /> : null}

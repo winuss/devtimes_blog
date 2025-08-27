@@ -42,7 +42,11 @@ const CategoryPage = async ({ params, searchParams }: Props) => {
   const page = Number(searchParams?.page || '1');
   const tag = searchParams?.tag;
   const q = searchParams?.q;
-  return <PostListPage category={params.category} page={page} tag={tag} q={q} />;
+  return (
+    <div className='bg-[#f9fafb]'>
+      <PostListPage category={params.category} page={page} tag={tag} q={q} />
+    </div>
+  );
 };
 
 export default CategoryPage;
