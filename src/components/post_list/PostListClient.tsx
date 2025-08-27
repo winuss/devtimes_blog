@@ -96,6 +96,13 @@ export default function PostListClient() {
     return (lastSpace > 0 ? sliced.slice(0, lastSpace) : sliced).concat('…');
   };
 
+  const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const stripLeadingTitle = (text: string, title?: string) => {
+    if (!text || !title) return text;
+    const pattern = new RegExp('^\\s*' + escapeRegExp(title) + '(?:\n|\s|:|—|-)*', 'i');
+    return text.replace(pattern, '');
+  };
+
   if (isLoading)
     return (
       <section>
@@ -146,12 +153,14 @@ export default function PostListClient() {
       </div>
       <ul className='grid grid-cols-1 gap-8'>
         {items.map((p) => {
+          const baseForExcerpt = stripLeadingTitle(p.searchText || '', p.title || '');
           const runtimePost: any = {
             ...p,
             dateString: p.date ? dayjs(p.date).format('YYYY년 MM월 DD일') : '',
             readingMinutes: estimateReadingMinutes(p.content),
             categoryPublicName: getCategoryPublicName(p.categoryPath),
-            excerpt: makeExcerpt(p.searchText, 320),
+            // 제목만 제거하고 길이는 동일(320자) 유지
+            excerpt: makeExcerpt(baseForExcerpt, 320),
           };
           return <PostCard key={p.url + (p.date || '')} post={runtimePost} />;
         })}
