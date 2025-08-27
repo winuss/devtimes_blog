@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import Script from 'next/script';
+ 
 
 import { Toaster } from '@/components/ui/toaster';
 import { baseDomain, blogDesc, blogName, blogThumbnailURL } from '@/config/const';
@@ -42,9 +42,8 @@ export default function RootLayout({
   return (
     <html lang='ko' className='h-full scroll-smooth' suppressHydrationWarning>
       <head>
-        <Script
-          id="adsbygoogle-init"
-          strategy="afterInteractive"
+        <script
+          async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1154659137489563"
           crossOrigin="anonymous"
         />

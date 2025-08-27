@@ -4,6 +4,9 @@ import { useEffect, useMemo, useState } from 'react';
 import dayjs from 'dayjs';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import PostCard from './PostCard';
+import dynamic from 'next/dynamic';
+
+const AdInList = dynamic(() => import('@/components/ads/AdInList'), { ssr: false });
 import PostCardSkeleton from './PostCardSkeleton';
 import Pagination from './Pagination';
 
@@ -152,7 +155,7 @@ export default function PostListClient() {
         ) : null}
       </div>
       <ul className='grid grid-cols-1 gap-8'>
-        {items.map((p) => {
+        {items.map((p, idx) => {
           const baseForExcerpt = stripLeadingTitle(p.searchText || '', p.title || '');
           const runtimePost: any = {
             ...p,
@@ -162,7 +165,10 @@ export default function PostListClient() {
             // 제목만 제거하고 길이는 동일(320자) 유지
             excerpt: makeExcerpt(baseForExcerpt, 320),
           };
-          return <PostCard key={p.url + (p.date || '')} post={runtimePost} />;
+          return [
+            <PostCard key={`post-${p.url}-${p.date || ''}`} post={runtimePost} />,
+            (idx + 1) % 4 === 0 ? <AdInList key={`ad-${p.url}-${idx}`} /> : null,
+          ];
         })}
       </ul>
       <Pagination currentPage={page} totalPages={totalPages} />
