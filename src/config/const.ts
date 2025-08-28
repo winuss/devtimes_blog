@@ -8,3 +8,6 @@ export const blogThumbnailURL = `${baseDomain}/blog_thumbnail.png`;
 // AdSense 설정
 export const ADSENSE_CLIENT = 'ca-pub-1154659137489563';
 export const ADSENSE_LIST_SLOT = '5130375812';
+
+// 태그 필터 표시 기본 개수 (나머지는 접기)
+export const TAGS_INITIAL_VISIBLE_COUNT = 12;
