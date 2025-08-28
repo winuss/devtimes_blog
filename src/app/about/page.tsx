@@ -27,7 +27,7 @@ export default async function AboutPage() {
   const RESUME_DATA = DATAS.data;
   const projectList = await getSortedProjectList();
   return (
-    <main className='container relative mx-auto scroll-my-12 overflow-auto p-0 sm:p-0 md:p-0 print:p-12 print:pt-0'>
+    <main className='container relative mx-auto scroll-my-12 overflow-auto p-0 sm:p-0 md:p-0 print:p-12 print:pt-0  mt-[-60px]'>
       {/* Hero */}
       <section className='relative overflow-hidden border-b bg-gradient-to-b from-white to-gray-50 px-6 py-12 dark:from-slate-950 dark:to-slate-900 sm:px-9 md:px-16'>
         <div className='mx-auto flex w-full max-w-4xl flex-col items-center justify-between gap-8 sm:flex-row'>
@@ -107,11 +107,11 @@ export default async function AboutPage() {
                 <h3 className='text-lg font-semibold'>Intro</h3>
                 <CardDescription>
                   <span className='block'>Hi, I&apos;m <b>Yoo, Seongsu</b></span>
-                  <span className='block'>Fe Developer 🚀 from Korea</span>
+                  <span className='block'>FE Developer 🚀 from Korea</span>
                 </CardDescription>
               </CardHeader>
               <CardContent className='space-y-2 text-sm text-muted-foreground'>
-                <p>🔭 I’m currently working on … in Seoul</p>
+                {/* <p>🏙️ 서울에서 근무중</p> */}
                 <p>
                   <a
                     className='inline-flex items-center gap-x-1.5 align-baseline leading-none hover:underline'
@@ -127,7 +127,6 @@ export default async function AboutPage() {
             <Card>
               <CardHeader className='pb-2'>
                 <h3 className='text-lg font-semibold'>Interests</h3>
-                <CardDescription>요즘 관심사</CardDescription>
               </CardHeader>
               <CardContent className='flex flex-wrap gap-2'>
                 {['ML', 'DL', 'PWA', 'WebAssembly', 'Socket.io', 'Flutter'].map((t) => (
@@ -141,7 +140,6 @@ export default async function AboutPage() {
             <Card className='sm:col-span-2'>
               <CardHeader className='pb-2'>
                 <h3 className='text-lg font-semibold'>Experienced</h3>
-                <CardDescription>Framework / Library · Language · Tool</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className='grid grid-cols-1 gap-6 sm:grid-cols-3'>
@@ -174,7 +172,6 @@ export default async function AboutPage() {
             <Card className='sm:col-span-2'>
               <CardHeader className='pb-2'>
                 <h3 className='text-lg font-semibold'>Etc</h3>
-                <CardDescription>그 외</CardDescription>
               </CardHeader>
               <CardContent>
                 <ul className='list-disc pl-5 text-sm text-muted-foreground'>
