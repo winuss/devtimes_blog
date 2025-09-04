@@ -12,10 +12,10 @@ interface PostListProps {
 const PostListPage = async ({ category, page = 1, pageSize = 12, tag, q }: PostListProps) => {
 
   return (
-    <section className='mx-auto mt-12 w-full max-w-4xl px-4 lg:px-8'>
+    <section className='mx-auto mt-6 w-full max-w-4xl px-4 lg:px-8'>
       <section>
         {/* @ts-expect-error Async Server Component */}
-        <TagFilter />
+        <TagFilter searchParams={{ q, tag }} />
         <PostListClient />
       </section>
     </section>
