@@ -42,7 +42,14 @@ export default function PostListClient() {
     async function load() {
       try {
         setIsLoading(true);
-        const res = await fetch('/search-index.json', { cache: 'force-cache' });
+        const res = await fetch('/search-index.json', { 
+          cache: 'no-cache',
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+          }
+        });
         if (!res.ok) throw new Error(`failed to fetch index: ${res.status}`);
         const data = await res.json();
         if (!cancelled) setAllPosts(data.posts || []);
