@@ -14,7 +14,6 @@ const PostListPage = async ({ category, page = 1, pageSize = 12, tag, q }: PostL
   return (
     <section className='mx-auto mt-6 w-full max-w-4xl px-4 lg:px-8'>
       <section>
-        {/* @ts-expect-error Async Server Component */}
         <TagFilter searchParams={{ q, tag }} />
         <PostListClient />
       </section>
