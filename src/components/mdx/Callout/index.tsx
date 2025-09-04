@@ -12,7 +12,7 @@ interface CalloutProps extends PropsWithChildren {
 
 interface IconType {
   [key: string]: {
-    icon: () => JSX.Element;
+    icon: () => React.JSX.Element;
     boxClass: string;
   };
 }

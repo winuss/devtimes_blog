@@ -42,17 +42,37 @@ export default function PostListClient() {
     async function load() {
       try {
         setIsLoading(true);
+        
+        // 로컬스토리지에서 캐시된 데이터 확인
+        const cachedData = localStorage.getItem('search-index-cache');
+        const cachedVersion = localStorage.getItem('search-index-version');
+        
+        const headers: HeadersInit = {};
+        if (cachedVersion) {
+          headers['If-None-Match'] = cachedVersion;
+        }
+        
         const res = await fetch('/search-index.json', { 
-          cache: 'no-cache',
-          headers: {
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache',
-            'Expires': '0'
-          }
+          cache: 'default',
+          headers
         });
-        if (!res.ok) throw new Error(`failed to fetch index: ${res.status}`);
-        const data = await res.json();
-        if (!cancelled) setAllPosts(data.posts || []);
+        
+        if (res.status === 304 && cachedData) {
+          // 304 Not Modified - 캐시된 데이터 사용
+          const data = JSON.parse(cachedData);
+          if (!cancelled) setAllPosts(data.posts || []);
+        } else if (res.ok) {
+          // 새 데이터 받아옴
+          const data = await res.json();
+          if (!cancelled) {
+            setAllPosts(data.posts || []);
+            // 새 데이터를 로컬스토리지에 캐시
+            localStorage.setItem('search-index-cache', JSON.stringify(data));
+            localStorage.setItem('search-index-version', data.version || '');
+          }
+        } else {
+          throw new Error(`failed to fetch index: ${res.status}`);
+        }
       } catch (e: any) {
         if (!cancelled) setError(e?.message || 'failed to load');
       } finally {

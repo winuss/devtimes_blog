@@ -60,9 +60,24 @@ async function generate() {
     });
   }
 
+  // 파일 버전 해시 생성 (포스트 내용 기반)
+  const crypto = require('crypto');
+  const contentHash = crypto
+    .createHash('md5')
+    .update(JSON.stringify(posts.map(p => ({ title: p.title, date: p.date, content: p.content }))))
+    .digest('hex')
+    .substring(0, 8);
+
+  const indexData = { 
+    generatedAt: new Date().toISOString(), 
+    version: contentHash,
+    count: posts.length, 
+    posts 
+  };
+
   await fs.ensureDir(publicDir);
-  await fs.writeJson(outPath, { generatedAt: new Date().toISOString(), count: posts.length, posts }, { spaces: 2 });
-  console.log(`✓ search-index.json generated: ${posts.length} posts`);
+  await fs.writeJson(outPath, indexData, { spaces: 2 });
+  console.log(`✓ search-index.json generated: ${posts.length} posts (v${contentHash})`);
 }
 
 generate().catch((err) => {

@@ -20,6 +20,15 @@ const nextConfig = {
           },
         ],
       },
+      {
+        source: '/search-index.json',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=300, stale-while-revalidate=86400', // 5분 캐시, 24시간 stale-while-revalidate
+          },
+        ],
+      },
     ];
   }
 };

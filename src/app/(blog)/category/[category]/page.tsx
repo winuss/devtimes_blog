@@ -5,8 +5,8 @@ import { baseDomain, blogName, blogThumbnailURL } from '@/config/const';
 import { getCategoryList, getCategoryPublicName } from '@/lib/post';
 
 type Props = {
-  params: { category: string };
-  searchParams?: { page?: string; tag?: string; q?: string };
+  params: Promise<{ category: string }>;
+  searchParams: Promise<{ page?: string; tag?: string; q?: string }>;
 };
 
 // 허용된 param 외 접근시 404
@@ -19,7 +19,8 @@ export function generateStaticParams() {
   return paramList;
 }
 
-export async function generateMetadata({ params: { category } }: Props): Promise<Metadata> {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { category } = await params;
   const cg = getCategoryPublicName(category);
   const title = `${cg} | ${blogName}`;
   const url = `${baseDomain}/${category}`;
@@ -49,12 +50,13 @@ const CategoryPage = async ({ params, searchParams }: Props) => {
     datalake: 'datalake',
   };
 
-  const { category } = params;
+  const { category } = await params;
+  const searchParamsData = await searchParams;
   const mappedTag = categoryToTag[category];
 
   const qs = new URLSearchParams();
-  if (searchParams?.q) qs.set('q', searchParams.q);
-  if (searchParams?.tag) qs.set('tag', searchParams.tag);
+  if (searchParamsData?.q) qs.set('q', searchParamsData.q);
+  if (searchParamsData?.tag) qs.set('tag', searchParamsData.tag);
   else if (mappedTag) qs.set('tag', mappedTag);
 
   const target = qs.toString() ? `/?${qs.toString()}` : '/';

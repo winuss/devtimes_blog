@@ -10,13 +10,14 @@ import { baseDomain } from '@/config/const';
 import { getPostDetail, getPostPaths, parsePostAbstract, parseToc } from '@/lib/post';
 
 type Props = {
-  params: { category: string; slug: string };
+  params: Promise<{ category: string; slug: string }>;
 };
 
 // 허용된 param 외 접근시 404
 export const dynamicParams = false;
 
-export async function generateMetadata({ params: { category, slug } }: Props): Promise<Metadata> {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { category, slug } = await params;
   const post = await getPostDetail(category, slug);
 
   const title = `${post?.title} | DevTimes Blog`;
@@ -50,7 +51,8 @@ export function generateStaticParams() {
   return paramList;
 }
 
-const PostDetail = async ({ params: { category, slug } }: Props) => {
+const PostDetail = async ({ params }: Props) => {
+  const { category, slug } = await params;
   const post = await getPostDetail(category, slug);
 
   if (post == null) return null;
