@@ -1,0 +1,873 @@
+---
+title: "🚀 Next.js 전체 페이지 캐싱 - 신선도 & SSR 페이지 캐싱"
+date: 2025-09-01
+desc: Next.js에서 전체 페이지 캐싱을 구현하면서도 데이터의 신선도를 유지하는 완벽 가이드
+tags:
+  - React
+  - Next.js
+  - Caching
+  - Performance
+---
+
+![](/posts/react/nextjs-page-caching/image1.png)
+
+웹 애플리케이션의 성능을 최적화하는 것은 현대 웹 개발에서 가장 중요한 과제 중 하나입니다. 특히 Server-Side Rendering(SSR)을 사용하는 Next.js 애플리케이션에서 캐싱은 성능 향상의 핵심 요소입니다. 하지만 캐싱과 데이터 신선도 사이의 균형을 맞추는 것은 쉽지 않은 일입니다.
+
+이 글에서는 Next.js에서 전체 페이지 캐싱을 구현하면서도 데이터의 신선도를 유지하는 방법에 대해 자세히 알아보겠습니다.
+
+## 전체 페이지 캐싱이란?
+
+전체 페이지 캐싱(Full Page Caching)은 서버에서 렌더링된 완전한 HTML 페이지를 메모리나 디스크에 저장하여, 동일한 요청이 들어올 때 다시 렌더링 과정을 거치지 않고 캐시된 페이지를 즉시 반환하는 기술입니다.
+
+### 전체 페이지 캐싱의 장점
+
+1. **빠른 응답 시간**: 이미 렌더링된 페이지를 바로 반환하므로 응답 속도가 크게 향상됩니다.
+2. **서버 리소스 절약**: CPU와 메모리 사용량을 줄일 수 있습니다.
+3. **데이터베이스 부하 감소**: 반복적인 데이터베이스 쿼리를 줄일 수 있습니다.
+4. **확장성 향상**: 더 많은 동시 사용자를 처리할 수 있습니다.
+
+### 전체 페이지 캐싱의 단점
+
+1. **데이터 신선도 문제**: 캐시된 데이터가 오래될 수 있습니다.
+2. **메모리 사용량 증가**: 페이지를 메모리에 저장해야 합니다.
+3. **복잡한 무효화 로직**: 언제 캐시를 갱신할지 결정하기 어렵습니다.
+
+## Next.js에서의 캐싱 옵션
+
+### 1. Static Generation (SSG)
+
+```javascript
+// pages/products/[id].js
+export async function getStaticProps({ params }) {
+  const product = await fetchProduct(params.id);
+  
+  return {
+    props: {
+      product,
+    },
+    // 60초마다 재생성
+    revalidate: 60,
+  };
+}
+
+export async function getStaticPaths() {
+  const products = await fetchAllProducts();
+  
+  const paths = products.map((product) => ({
+    params: { id: product.id.toString() },
+  }));
+
+  return {
+    paths,
+    fallback: 'blocking',
+  };
+}
+```
+
+### 2. Incremental Static Regeneration (ISR)
+
+ISR은 SSG의 장점을 유지하면서 데이터 신선도 문제를 해결하는 방법입니다.
+
+```javascript
+// pages/blog/[slug].js
+export async function getStaticProps({ params }) {
+  const post = await fetchBlogPost(params.slug);
+  
+  return {
+    props: {
+      post,
+    },
+    // 10분마다 재생성 시도
+    revalidate: 600,
+  };
+}
+```
+
+### 3. Server-Side Rendering with Caching
+
+SSR과 캐싱을 결합한 방법입니다.
+
+```javascript
+// pages/api/products.js
+import { NextApiRequest, NextApiResponse } from 'next';
+
+const cache = new Map();
+
+export default async function handler(req, res) {
+  const cacheKey = `products_${JSON.stringify(req.query)}`;
+  
+  // 캐시 확인
+  if (cache.has(cacheKey)) {
+    const { data, timestamp } = cache.get(cacheKey);
+    
+    // 5분 이내의 캐시는 유효
+    if (Date.now() - timestamp < 5 * 60 * 1000) {
+      res.setHeader('X-Cache', 'HIT');
+      return res.json(data);
+    }
+  }
+  
+  // 새로운 데이터 가져오기
+  const products = await fetchProducts(req.query);
+  
+  // 캐시에 저장
+  cache.set(cacheKey, {
+    data: products,
+    timestamp: Date.now(),
+  });
+  
+  res.setHeader('X-Cache', 'MISS');
+  res.json(products);
+}
+```
+
+## Redis를 활용한 전체 페이지 캐싱
+
+더 강력한 캐싱 솔루션을 위해 Redis를 사용할 수 있습니다.
+
+### Redis 캐싱 미들웨어 구현
+
+```javascript
+// lib/cache.js
+import Redis from 'ioredis';
+
+const redis = new Redis(process.env.REDIS_URL);
+
+export class PageCache {
+  constructor(defaultTTL = 300) { // 5분 기본 TTL
+    this.defaultTTL = defaultTTL;
+  }
+
+  generateKey(req) {
+    const { pathname, query } = req;
+    const sortedQuery = Object.keys(query)
+      .sort()
+      .reduce((result, key) => {
+        result[key] = query[key];
+        return result;
+      }, {});
+    
+    return `page:${pathname}:${JSON.stringify(sortedQuery)}`;
+  }
+
+  async get(req) {
+    const key = this.generateKey(req);
+    const cached = await redis.get(key);
+    
+    if (cached) {
+      return JSON.parse(cached);
+    }
+    
+    return null;
+  }
+
+  async set(req, data, ttl = null) {
+    const key = this.generateKey(req);
+    const cacheData = {
+      html: data,
+      timestamp: Date.now(),
+      ttl: ttl || this.defaultTTL,
+    };
+    
+    await redis.setex(key, ttl || this.defaultTTL, JSON.stringify(cacheData));
+  }
+
+  async invalidate(pattern) {
+    const keys = await redis.keys(pattern);
+    if (keys.length > 0) {
+      await redis.del(...keys);
+    }
+  }
+}
+```
+
+### 캐싱 미들웨어 적용
+
+```javascript
+// pages/products/index.js
+import { GetServerSideProps } from 'next';
+import { PageCache } from '../../lib/cache';
+
+const cache = new PageCache(600); // 10분 TTL
+
+export default function ProductsPage({ products, fromCache }) {
+  return (
+    <div>
+      <h1>상품 목록 {fromCache && <span>(캐시됨)</span>}</h1>
+      <div>
+        {products.map(product => (
+          <div key={product.id}>
+            <h2>{product.name}</h2>
+            <p>{product.price}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
+  // 캐시 확인
+  const cachedData = await cache.get(req);
+  
+  if (cachedData) {
+    // 캐시 히트
+    res.setHeader('X-Cache', 'HIT');
+    return {
+      props: {
+        products: cachedData.products,
+        fromCache: true,
+      },
+    };
+  }
+
+  // 캐시 미스 - 데이터 가져오기
+  const products = await fetchProducts();
+  
+  // 캐시에 저장
+  await cache.set(req, { products });
+  
+  res.setHeader('X-Cache', 'MISS');
+  
+  return {
+    props: {
+      products,
+      fromCache: false,
+    },
+  };
+};
+```
+
+## 스마트 캐시 무효화 전략
+
+### 1. 태그 기반 무효화
+
+```javascript
+// lib/smartCache.js
+export class SmartCache extends PageCache {
+  async setWithTags(req, data, tags = [], ttl = null) {
+    const key = this.generateKey(req);
+    const cacheData = {
+      html: data,
+      timestamp: Date.now(),
+      tags,
+      ttl: ttl || this.defaultTTL,
+    };
+    
+    // 메인 캐시 저장
+    await redis.setex(key, ttl || this.defaultTTL, JSON.stringify(cacheData));
+    
+    // 태그별 키 매핑 저장
+    for (const tag of tags) {
+      await redis.sadd(`tag:${tag}`, key);
+      await redis.expire(`tag:${tag}`, (ttl || this.defaultTTL) + 60);
+    }
+  }
+
+  async invalidateByTag(tag) {
+    const keys = await redis.smembers(`tag:${tag}`);
+    if (keys.length > 0) {
+      await redis.del(...keys);
+      await redis.del(`tag:${tag}`);
+    }
+  }
+}
+```
+
+### 2. 시간 기반 무효화
+
+```javascript
+// lib/timeBasedCache.js
+export class TimeBasedCache extends PageCache {
+  constructor(defaultTTL = 300) {
+    super(defaultTTL);
+    this.scheduleCleanup();
+  }
+
+  scheduleCleanup() {
+    setInterval(async () => {
+      await this.cleanupExpired();
+    }, 60000); // 1분마다 실행
+  }
+
+  async cleanupExpired() {
+    const pattern = 'page:*';
+    const keys = await redis.keys(pattern);
+    
+    for (const key of keys) {
+      const data = await redis.get(key);
+      if (data) {
+        const parsed = JSON.parse(data);
+        const age = (Date.now() - parsed.timestamp) / 1000;
+        
+        if (age > parsed.ttl) {
+          await redis.del(key);
+        }
+      }
+    }
+  }
+}
+```
+
+## 조건부 캐싱 구현
+
+모든 페이지가 같은 방식으로 캐싱되어야 하는 것은 아닙니다. 조건부 캐싱을 통해 더 정교한 캐싱 전략을 구현할 수 있습니다.
+
+```javascript
+// lib/conditionalCache.js
+export class ConditionalCache extends PageCache {
+  constructor(options = {}) {
+    super(options.defaultTTL);
+    this.rules = options.rules || [];
+  }
+
+  shouldCache(req, res) {
+    // 기본 조건들
+    if (req.method !== 'GET') return false;
+    if (req.headers.cookie?.includes('admin=true')) return false;
+    if (res.statusCode !== 200) return false;
+
+    // 사용자 정의 규칙 적용
+    for (const rule of this.rules) {
+      if (!rule(req, res)) return false;
+    }
+
+    return true;
+  }
+
+  getTTL(req) {
+    const { pathname } = req;
+    
+    // 경로별 TTL 설정
+    if (pathname.startsWith('/api/')) return 60; // API는 1분
+    if (pathname.startsWith('/blog/')) return 3600; // 블로그는 1시간
+    if (pathname.startsWith('/products/')) return 600; // 상품은 10분
+    
+    return this.defaultTTL;
+  }
+
+  async get(req, res) {
+    if (!this.shouldCache(req, res)) return null;
+    return super.get(req);
+  }
+
+  async set(req, res, data) {
+    if (!this.shouldCache(req, res)) return;
+    
+    const ttl = this.getTTL(req);
+    return super.set(req, data, ttl);
+  }
+}
+```
+
+## 실제 사용 예제
+
+### 전체 캐싱 시스템 통합
+
+```javascript
+// lib/cacheManager.js
+import { ConditionalCache } from './conditionalCache';
+import { SmartCache } from './smartCache';
+
+export class CacheManager {
+  constructor() {
+    this.cache = new ConditionalCache({
+      defaultTTL: 300,
+      rules: [
+        // 인증된 사용자의 개인 페이지는 캐싱하지 않음
+        (req) => !req.url.includes('/my-account'),
+        // 검색 쿼리가 있는 페이지는 더 짧은 TTL
+        (req) => {
+          if (req.query.search) {
+            req._customTTL = 60;
+          }
+          return true;
+        },
+      ],
+    });
+  }
+
+  async middleware(req, res, next) {
+    // 캐시 확인
+    const cached = await this.cache.get(req, res);
+    
+    if (cached) {
+      res.setHeader('X-Cache', 'HIT');
+      res.setHeader('X-Cache-Time', new Date(cached.timestamp).toISOString());
+      return res.send(cached.html);
+    }
+
+    // 원본 res.send 메서드 백업
+    const originalSend = res.send.bind(res);
+    
+    // res.send 메서드 래핑
+    res.send = async (body) => {
+      // 캐시에 저장
+      if (res.statusCode === 200 && typeof body === 'string') {
+        const ttl = req._customTTL || this.cache.getTTL(req);
+        await this.cache.set(req, res, body, ttl);
+        res.setHeader('X-Cache', 'MISS');
+      }
+      
+      return originalSend(body);
+    };
+
+    next();
+  }
+}
+```
+
+### Next.js API 미들웨어로 적용
+
+```javascript
+// middleware.js
+import { NextResponse } from 'next/server';
+import { CacheManager } from './lib/cacheManager';
+
+const cacheManager = new CacheManager();
+
+export async function middleware(request) {
+  // 정적 파일은 건너뛰기
+  if (request.nextUrl.pathname.startsWith('/_next/')) {
+    return NextResponse.next();
+  }
+
+  // 캐시 확인
+  const cached = await cacheManager.cache.get(request);
+  
+  if (cached) {
+    const response = new NextResponse(cached.html);
+    response.headers.set('X-Cache', 'HIT');
+    response.headers.set('Content-Type', 'text/html');
+    return response;
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: [
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+  ],
+};
+```
+
+## 성능 모니터링 및 최적화
+
+### 캐시 성능 메트릭
+
+```javascript
+// lib/cacheMetrics.js
+export class CacheMetrics {
+  constructor() {
+    this.stats = {
+      hits: 0,
+      misses: 0,
+      errors: 0,
+      totalRequests: 0,
+    };
+  }
+
+  recordHit() {
+    this.stats.hits++;
+    this.stats.totalRequests++;
+  }
+
+  recordMiss() {
+    this.stats.misses++;
+    this.stats.totalRequests++;
+  }
+
+  recordError() {
+    this.stats.errors++;
+  }
+
+  getHitRate() {
+    if (this.stats.totalRequests === 0) return 0;
+    return (this.stats.hits / this.stats.totalRequests) * 100;
+  }
+
+  getStats() {
+    return {
+      ...this.stats,
+      hitRate: this.getHitRate(),
+    };
+  }
+
+  reset() {
+    this.stats = {
+      hits: 0,
+      misses: 0,
+      errors: 0,
+      totalRequests: 0,
+    };
+  }
+}
+```
+
+### 캐시 워밍
+
+```javascript
+// scripts/warmCache.js
+import { CacheManager } from '../lib/cacheManager';
+
+const cacheManager = new CacheManager();
+
+const POPULAR_PAGES = [
+  '/',
+  '/products',
+  '/about',
+  '/blog',
+];
+
+async function warmCache() {
+  console.log('캐시 워밍 시작...');
+  
+  for (const page of POPULAR_PAGES) {
+    try {
+      const response = await fetch(`${process.env.SITE_URL}${page}`);
+      if (response.ok) {
+        console.log(`✅ ${page} 캐시 완료`);
+      } else {
+        console.log(`❌ ${page} 실패: ${response.status}`);
+      }
+    } catch (error) {
+      console.error(`❌ ${page} 오류:`, error.message);
+    }
+  }
+  
+  console.log('캐시 워밍 완료!');
+}
+
+warmCache();
+```
+
+## 베스트 프랙티스
+
+### 1. 적절한 TTL 설정
+- **정적 콘텐츠**: 1시간 이상
+- **동적 콘텐츠**: 5-15분
+- **실시간 데이터**: 30초-2분
+- **API 응답**: 1-5분
+
+### 2. 캐시 키 전략
+```javascript
+// 좋은 캐시 키 예제
+function generateCacheKey(req) {
+  const { pathname, query } = req;
+  const { page, sort, filter } = query;
+  
+  // 정렬된 쿼리 파라미터만 포함
+  const relevantParams = { page, sort, filter };
+  const queryString = new URLSearchParams(relevantParams).toString();
+  
+  return `${pathname}${queryString ? `?${queryString}` : ''}`;
+}
+```
+
+### 3. 메모리 관리
+```javascript
+// 메모리 사용량 모니터링
+function monitorMemoryUsage() {
+  const used = process.memoryUsage();
+  console.log('메모리 사용량:');
+  for (let key in used) {
+    console.log(`${key}: ${Math.round(used[key] / 1024 / 1024 * 100) / 100} MB`);
+  }
+}
+
+setInterval(monitorMemoryUsage, 60000); // 1분마다 체크
+```
+
+### 4. 캐시 무효화 전략
+```javascript
+// 이벤트 기반 무효화
+import { EventEmitter } from 'events';
+
+class CacheInvalidator extends EventEmitter {
+  constructor(cache) {
+    super();
+    this.cache = cache;
+    this.setupEventListeners();
+  }
+
+  setupEventListeners() {
+    this.on('product:updated', (productId) => {
+      this.cache.invalidate(`page:/products/${productId}:*`);
+      this.cache.invalidate('page:/products:*');
+    });
+
+    this.on('user:updated', (userId) => {
+      this.cache.invalidate(`page:/users/${userId}:*`);
+    });
+  }
+}
+```
+
+## App Router에서의 캐싱
+
+Next.js 13+ App Router에서는 더 강력한 캐싱 옵션을 제공합니다.
+
+### 1. 페이지 캐싱 with App Router
+
+```typescript
+// app/products/page.tsx
+import { unstable_cache } from 'next/cache';
+
+const getCachedProducts = unstable_cache(
+  async () => {
+    const products = await fetchProducts();
+    return products;
+  },
+  ['products'],
+  {
+    revalidate: 3600, // 1시간
+    tags: ['products']
+  }
+);
+
+export default async function ProductsPage() {
+  const products = await getCachedProducts();
+  
+  return (
+    <div>
+      <h1>상품 목록</h1>
+      {products.map(product => (
+        <div key={product.id}>
+          <h2>{product.name}</h2>
+          <p>{product.price}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+```
+
+### 2. 데이터 캐시 무효화
+
+```typescript
+// app/admin/actions.ts
+import { revalidateTag } from 'next/cache';
+
+export async function updateProduct(productId: string, data: any) {
+  await updateProductInDB(productId, data);
+  
+  // 특정 태그 무효화
+  revalidateTag('products');
+  revalidateTag(`product-${productId}`);
+}
+```
+
+### 3. 라우트 캐시 설정
+
+```typescript
+// app/api/products/route.ts
+export const dynamic = 'force-dynamic'; // 또는 'force-static'
+export const revalidate = 3600; // 1시간
+
+export async function GET() {
+  const products = await fetchProducts();
+  return Response.json(products);
+}
+```
+
+## 고급 캐싱 패턴
+
+### 1. 계층형 캐싱
+
+```javascript
+// lib/hierarchicalCache.js
+export class HierarchicalCache {
+  constructor() {
+    this.l1Cache = new Map(); // 메모리 캐시
+    this.l2Cache = redis; // Redis 캐시
+  }
+
+  async get(key) {
+    // L1 캐시 확인
+    if (this.l1Cache.has(key)) {
+      const data = this.l1Cache.get(key);
+      if (this.isValid(data)) {
+        return data.value;
+      }
+    }
+
+    // L2 캐시 확인
+    const l2Data = await this.l2Cache.get(key);
+    if (l2Data) {
+      const parsed = JSON.parse(l2Data);
+      // L1에 복사
+      this.l1Cache.set(key, {
+        value: parsed.value,
+        timestamp: parsed.timestamp,
+        ttl: Math.min(300, parsed.ttl), // L1은 최대 5분
+      });
+      return parsed.value;
+    }
+
+    return null;
+  }
+
+  async set(key, value, ttl = 3600) {
+    const data = {
+      value,
+      timestamp: Date.now(),
+      ttl,
+    };
+
+    // L1에 저장 (짧은 TTL)
+    this.l1Cache.set(key, {
+      ...data,
+      ttl: Math.min(300, ttl),
+    });
+
+    // L2에 저장
+    await this.l2Cache.setex(key, ttl, JSON.stringify(data));
+  }
+
+  isValid(data) {
+    return (Date.now() - data.timestamp) / 1000 < data.ttl;
+  }
+}
+```
+
+### 2. 적응형 캐싱
+
+```javascript
+// lib/adaptiveCache.js
+export class AdaptiveCache extends PageCache {
+  constructor() {
+    super();
+    this.hitRates = new Map();
+    this.accessCounts = new Map();
+  }
+
+  async get(key) {
+    this.incrementAccess(key);
+    return super.get(key);
+  }
+
+  incrementAccess(key) {
+    const count = this.accessCounts.get(key) || 0;
+    this.accessCounts.set(key, count + 1);
+  }
+
+  adaptTTL(key, baseTTL) {
+    const accessCount = this.accessCounts.get(key) || 0;
+    const hitRate = this.hitRates.get(key) || 0;
+
+    // 자주 접근되고 히트율이 높은 페이지는 더 오래 캐시
+    if (accessCount > 100 && hitRate > 0.8) {
+      return baseTTL * 2;
+    }
+
+    // 거의 접근되지 않는 페이지는 짧게 캐시
+    if (accessCount < 10) {
+      return baseTTL / 2;
+    }
+
+    return baseTTL;
+  }
+}
+```
+
+## 실제 프로덕션 고려사항
+
+### 1. 캐시 크기 제한
+
+```javascript
+// lib/boundedCache.js
+export class BoundedCache extends PageCache {
+  constructor(maxSize = 1000, defaultTTL = 300) {
+    super(defaultTTL);
+    this.maxSize = maxSize;
+    this.accessOrder = [];
+  }
+
+  async set(key, data, ttl) {
+    await super.set(key, data, ttl);
+    
+    // LRU 정책으로 크기 관리
+    this.updateAccessOrder(key);
+    
+    const currentSize = await this.getSize();
+    if (currentSize > this.maxSize) {
+      await this.evictLRU();
+    }
+  }
+
+  updateAccessOrder(key) {
+    const index = this.accessOrder.indexOf(key);
+    if (index > -1) {
+      this.accessOrder.splice(index, 1);
+    }
+    this.accessOrder.push(key);
+  }
+
+  async evictLRU() {
+    const lruKey = this.accessOrder.shift();
+    if (lruKey) {
+      await redis.del(lruKey);
+    }
+  }
+
+  async getSize() {
+    const keys = await redis.keys('page:*');
+    return keys.length;
+  }
+}
+```
+
+### 2. 캐시 압축
+
+```javascript
+// lib/compressedCache.js
+import { gzip, gunzip } from 'zlib';
+import { promisify } from 'util';
+
+const gzipAsync = promisify(gzip);
+const gunzipAsync = promisify(gunzip);
+
+export class CompressedCache extends PageCache {
+  async set(key, data, ttl) {
+    const compressed = await gzipAsync(JSON.stringify(data));
+    const cacheData = {
+      compressed: compressed.toString('base64'),
+      timestamp: Date.now(),
+      ttl: ttl || this.defaultTTL,
+    };
+    
+    await redis.setex(key, ttl || this.defaultTTL, JSON.stringify(cacheData));
+  }
+
+  async get(key) {
+    const cached = await redis.get(key);
+    
+    if (cached) {
+      const data = JSON.parse(cached);
+      const compressed = Buffer.from(data.compressed, 'base64');
+      const decompressed = await gunzipAsync(compressed);
+      return JSON.parse(decompressed.toString());
+    }
+    
+    return null;
+  }
+}
+```
+
+## 마치며
+
+Next.js에서 전체 페이지 캐싱을 구현할 때는 성능 향상과 데이터 신선도 사이의 균형을 잘 맞추는 것이 중요합니다.
+
+1. **적절한 캐싱 전략 선택**: ISR, SSR+캐싱, 조건부 캐싱 등
+2. **스마트한 무효화 로직**: 태그 기반, 시간 기반 무효화
+3. **성능 모니터링**: 캐시 히트율, 메모리 사용량 추적
+4. **베스트 프랙티스 적용**: TTL 설정, 캐시 키 전략, 메모리 관리
+
+이러한 요소들을 종합적으로 고려하여 구현하면, 사용자 경험을 크게 개선하면서도 서버 리소스를 효율적으로 사용할 수 있는 고성능 웹 애플리케이션을 만들 수 있습니다.
+
+캐싱은 강력한 최적화 도구이지만, 잘못 구현하면 오히려 문제가 될 수 있기 때문에 충분한 테스트와 모니터링을 통해 점진적으로 개선해나가는 것이 좋습니다.
+
+현대 웹 애플리케이션에서 캐싱은 선택이 아닌 필수 이기에 Next.js의 강력한 캐싱 기능들을 적절히 활용하여 더 나은 사용자 경험을 제공하면 좋을 것 같습니다.
+
+(출처 : https://blog.melvinprince.io/full-page-caching-in-next-js-how-to-cache-ssr-pages-without-losing-freshness-b68699905314)
