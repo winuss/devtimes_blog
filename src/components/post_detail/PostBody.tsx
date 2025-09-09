@@ -18,7 +18,7 @@ export const PostBody = async ({ post }: Props) => {
   const related = await getRelatedPosts(post, 5);
   const series = await getSeriesNav(post);
   return (
-    <div className='prose dark:prose-invert'>
+    <div className='prose max-w-none dark:prose-invert'>
       <MDXRemote
         source={post.content}
         options={{
