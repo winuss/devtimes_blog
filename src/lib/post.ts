@@ -187,14 +187,20 @@ export const getSeriesNav = async (post: Post) => {
   };
 };
 
+/** frontmatter의 `updated` 또는 `date`를 sitemap의 lastModified로 사용합니다. */
+const matterDateToValidDate = (value: Date | string | undefined): Date => {
+  if (value == null) return new Date(0);
+  const d = value instanceof Date ? value : new Date(value);
+  return Number.isNaN(d.getTime()) ? new Date(0) : d;
+};
+
 export const getSitemapPostList = async () => {
-  const postList = await getPostList();
+  const posts = await getSortedPostList();
   const baseUrl = 'https://blog.devtimes.com';
-  const sitemapPostList = postList.map(({ url }) => ({
-    lastModified: new Date(),
-    url: `${baseUrl}${url}`,
+  return posts.map((p) => ({
+    url: `${baseUrl}${p.url}`,
+    lastModified: matterDateToValidDate(p.updated ?? p.date),
   }));
-  return sitemapPostList;
 };
 
 export const getCategoryList = () => {
