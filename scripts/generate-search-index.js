@@ -1,8 +1,8 @@
 // scripts/generate-search-index.js
 const fs = require('fs-extra');
 const path = require('path');
-const glob = require('glob');
 const matter = require('gray-matter');
+const { getPostMdxPaths, parsePostLocation } = require('./lib/post-paths');
 
 function cleanMarkdown(raw) {
   if (!raw) return '';
@@ -26,19 +26,14 @@ function cleanMarkdown(raw) {
 }
 
 async function generate() {
-  const srcDir = path.join(process.cwd(), 'src', 'posts');
   const publicDir = path.join(process.cwd(), 'public');
   const outPath = path.join(publicDir, 'search-index.json');
 
-  const mdxFiles = glob.sync(path.join(srcDir, '**/content.mdx'));
+  const mdxFiles = getPostMdxPaths();
 
   const posts = [];
   for (const mdxPath of mdxFiles) {
-    const dir = path.dirname(mdxPath);
-    const relativeDir = path.relative(srcDir, dir).split(path.sep).join('/');
-    const segments = relativeDir.split('/');
-    const categoryPath = segments[0];
-    const slug = segments[segments.length - 1];
+    const { categoryPath, slug } = parsePostLocation(mdxPath);
     const url = `/${slug}`;
 
     const file = await fs.readFile(mdxPath, 'utf8');

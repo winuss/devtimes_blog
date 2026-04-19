@@ -1,0 +1,35 @@
+---
+description: 포스트 MDX에 대한 Harness Engineering(제약·검증·일관성)
+globs: src/posts/**/content.mdx
+alwaysApply: false
+---
+
+# 포스트 MDX 하네스
+
+새 글이나 수정은 **구조가 깨지지 않게** 맞춘다. 모델에게만 맡기지 말고 아래 제약을 지킨다.
+
+## 경로·URL
+
+- 파일은 반드시 `src/posts/{카테고리}/{slug}/content.mdx` 형태다.
+- 공개 URL은 `/{slug}` 이므로, **서로 다른 글에 같은 `{slug}` 폴더명을 쓰면 안 된다** (전역 유일).
+
+## 프론트매터 (필수)
+
+- `title`: 비어 있지 않은 문자열, 200자 이하.
+- `date`: `YYYY-MM-DD` 등 파싱 가능한 날짜.
+- `desc`: 비어 있지 않은 문자열, 500자 이하 (목록·OG용).
+
+## 선택
+
+- `tags`: 있으면 **문자열 배열**만.
+- `series`를 쓰면 `seriesOrder`(유한 숫자)를 같이 쓴다.
+- `draft: true`이면 검증 스크립트에서 필수 필드 검사를 건너뛴다 (미완성 초안용).
+
+## 피드백 루프 (도구)
+
+- 저장 후 로컬에서 `npm run validate-posts` 또는 `pnpm validate-posts`로 통과 여부를 확인한다.
+- `pnpm dev` / `pnpm build` 전에 `predev` / `prebuild`에서 같은 검증이 자동 실행된다.
+
+## 썸네일
+
+- `thumbnail`이 없으면 메타데이터의 OG 이미지 URL이 어색해질 수 있다. 표지가 있으면 `public/posts/...` 규칙에 맞게 넣는 것을 권장한다.
