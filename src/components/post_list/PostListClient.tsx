@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import dayjs from 'dayjs';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import PostCard from './PostCard';
@@ -136,14 +136,16 @@ export default function PostListClient() {
   if (isLoading)
     return (
       <section>
-        <div className='mb-4 flex items-center justify-between'>
-          <div className='flex flex-wrap items-center gap-2 text-xs text-gray-500'>
-            <span className='rounded-full bg-gray-50 px-2 py-1 dark:bg-slate-800'>로딩 중…</span>
-          </div>
+        <div className='mb-6 flex items-center justify-between'>
+          <span className='rounded-full border border-border/60 bg-muted/50 px-3 py-1.5 text-xs font-medium text-muted-foreground'>
+            로딩 중…
+          </span>
         </div>
-        <ul className='grid grid-cols-1 gap-8'>
+        <ul className='grid list-none grid-cols-1 gap-6 sm:gap-8'>
           {Array.from({ length: 6 }).map((_, idx) => (
-            <PostCardSkeleton key={idx} />
+            <li key={idx} className='min-w-0'>
+              <PostCardSkeleton />
+            </li>
           ))}
         </ul>
       </section>
@@ -153,7 +155,7 @@ export default function PostListClient() {
 
   return (
     <section>
-      <ul className='grid grid-cols-1 gap-8'>
+      <ul className='grid list-none grid-cols-1 gap-6 sm:gap-8'>
         {items.map((p, idx) => {
           const baseForExcerpt = stripLeadingTitle(p.searchText || '', p.title || '');
           const runtimePost: any = {
@@ -161,13 +163,16 @@ export default function PostListClient() {
             dateString: p.date ? dayjs(p.date).format('YYYY년 MM월 DD일') : '',
             readingMinutes: estimateReadingMinutes(p.content),
             categoryPublicName: getCategoryPublicName(p.categoryPath),
-            // 제목만 제거하고 길이는 동일(320자) 유지
             excerpt: makeExcerpt(baseForExcerpt, 320),
           };
-          return [
-            <PostCard key={`post-${p.url}-${p.date || ''}`} post={runtimePost} />,
-            (idx + 1) % 4 === 0 ? <AdInList key={`ad-${p.url}-${idx}`} /> : null,
-          ];
+          return (
+            <Fragment key={`row-${p.url}-${p.date || ''}`}>
+              <li className='min-w-0'>
+                <PostCard post={runtimePost} />
+              </li>
+              {(idx + 1) % 4 === 0 ? <AdInList key={`ad-${p.url}-${idx}`} /> : null}
+            </Fragment>
+          );
         })}
       </ul>
       <Pagination currentPage={page} totalPages={totalPages} />

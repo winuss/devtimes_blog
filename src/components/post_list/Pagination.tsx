@@ -21,19 +21,24 @@ export default function Pagination({ currentPage, totalPages }: Props) {
   if (totalPages <= 1) return null;
 
   return (
-    <nav className='mt-10 flex items-center justify-between'>
+    <nav
+      className='mt-12 flex items-center justify-between gap-3 border-t border-border/60 pt-8'
+      aria-label='페이지 탐색'
+    >
       <button
-        className='rounded-md border px-3 py-1 text-sm hover:bg-gray-50 disabled:opacity-50 dark:hover:bg-slate-800'
+        type='button'
+        className='rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium text-foreground shadow-sm transition hover:bg-muted disabled:pointer-events-none disabled:opacity-40'
         disabled={currentPage <= 1}
         onClick={() => go(currentPage - 1)}
       >
         이전
       </button>
-      <span className='rounded-md bg-gray-50 px-3 py-1 text-sm text-gray-600 dark:bg-slate-800 dark:text-gray-300'>
-        페이지 {currentPage} / {totalPages}
+      <span className='rounded-full bg-muted/60 px-4 py-2 text-sm tabular-nums text-muted-foreground'>
+        {currentPage} / {totalPages}
       </span>
       <button
-        className='rounded-md border px-3 py-1 text-sm hover:bg-gray-50 disabled:opacity-50 dark:hover:bg-slate-800'
+        type='button'
+        className='rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium text-foreground shadow-sm transition hover:bg-muted disabled:pointer-events-none disabled:opacity-40'
         disabled={currentPage >= totalPages}
         onClick={() => go(currentPage + 1)}
       >

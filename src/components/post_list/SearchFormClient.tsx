@@ -17,10 +17,13 @@ const SearchFormClient = ({ initialQuery }: Props) => {
         name='q'
         defaultValue={q}
         placeholder='검색어를 입력하세요'
-        className='w-full rounded-md border bg-white px-3 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:bg.white dark:text-black'
+        className='w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
       />
       {tag ? <input type='hidden' name='tag' value={tag} /> : null}
-      <button className='inline-flex items-center justify-center whitespace-nowrap rounded-md border px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-slate-800'>
+      <button
+        type='submit'
+        className='inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-lg border border-border bg-muted/50 px-4 py-2.5 text-sm font-medium text-foreground transition hover:bg-muted'
+      >
         검색
       </button>
     </form>

@@ -113,7 +113,7 @@ const HeaderSearchInner = () => {
           <div className="flex min-h-screen items-start justify-center p-4 pt-16">
             <div className="relative w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
               <form onSubmit={handleSearch} className="relative">
-                <div className="flex items-center rounded-lg border bg-white shadow-lg">
+                <div className="flex items-center rounded-xl border border-border bg-card shadow-lg shadow-black/10 dark:shadow-black/40">
                   <Search className="ml-3 size-4 text-muted-foreground" />
                   <input
                     ref={inputRef}
@@ -121,7 +121,7 @@ const HeaderSearchInner = () => {
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     placeholder="블로그에서 검색..."
-                    className="flex-1 rounded-lg px-3 py-3 text-sm focus:outline-none"
+                    className="flex-1 rounded-xl bg-transparent px-3 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
                   />
                   <Button
                     type="button"
@@ -178,34 +178,47 @@ export const Header = () => {
     <nav
       style={{ marginTop: isMainList ? marginTop : 0 }}
       ref={ref}
-      className={`${isMainList ? 'fixed' : 'static'} z-40 flex w-full flex-col items-center justify-center border-b bg-white shadow-sm print:hidden`}
+      className={cn(
+        'z-40 flex w-full flex-col items-center justify-center border-b border-border/80 print:hidden',
+        'bg-background/80 shadow-sm shadow-black/[0.03] backdrop-blur-md supports-[backdrop-filter]:bg-background/70',
+        'dark:shadow-black/20',
+        isMainList ? 'fixed' : 'static',
+      )}
     >
-      <div className='mt-1 flex h-[64px] w-full max-w-[1200px] items-center justify-between px-4'>
-        <div className='flex items-center font-medium'>
+      <div className='flex h-16 w-full max-w-[1200px] items-center justify-between gap-3 px-4 sm:px-6'>
+        <div className='flex flex-wrap items-center gap-1 sm:gap-1.5'>
             <Link
               href={mainHome.href}
               key={mainHome.name}
               target="_blank"
               rel="noopener noreferrer"
               className={cn(
-                'rounded-full px-4 py-1 text-center text-sm transition-colors hover:text-primary',
-                'bg-muted font-medium text-primary'
+                'rounded-full px-3 py-1.5 text-center text-xs font-semibold transition-colors sm:text-sm',
+                'bg-primary text-primary-foreground shadow-sm hover:bg-primary/90',
               )}
             >
               {mainHome.name}
             </Link>
-          {navList.map((navItem) => (
+          {navList.map((navItem) => {
+            const active =
+              navItem.href === '/'
+                ? pathname === '/'
+                : pathname === navItem.href || pathname.startsWith(`${navItem.href}/`);
+            return (
             <Link
               href={navItem.href}
               key={navItem.name}
               className={cn(
-                'rounded-full px-4 py-1 text-center text-sm transition-colors hover:text-primary',
-                'text-muted-foreground'
+                'rounded-full px-3 py-1.5 text-center text-xs transition-colors sm:text-sm',
+                active
+                  ? 'bg-muted font-medium text-foreground'
+                  : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
               )}
             >
               {navItem.name}
             </Link>
-          ))}
+            );
+          })}
         </div>
 
         <div className='flex items-center gap-3'>

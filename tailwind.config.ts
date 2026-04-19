@@ -66,8 +66,21 @@ const config = {
               scrollMarginTop: '5rem',
             },
             p: {
-              marginTop: '2rem',
-              marginBottom: '2rem',
+              marginTop: '1.1em',
+              marginBottom: '1.1em',
+              lineHeight: 1.75,
+            },
+            h2: {
+              marginTop: '2.25rem',
+              marginBottom: '0.85rem',
+              fontWeight: '700',
+              letterSpacing: '-0.02em',
+            },
+            h3: {
+              marginTop: '1.75rem',
+              marginBottom: '0.65rem',
+              fontWeight: '600',
+              letterSpacing: '-0.015em',
             },
             '.callout-contents > p': {
               margin: 0,

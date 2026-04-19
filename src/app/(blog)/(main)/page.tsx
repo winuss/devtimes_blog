@@ -14,7 +14,7 @@ const Blog = async ({ searchParams }: Props) => {
   const q = params?.q;
   if (Number.isNaN(page) || page < 1) redirect('/');
   return (
-    <div className='bg-[#f9fafb]'>
+    <div className='min-h-[calc(100vh-4rem)] bg-gradient-to-b from-muted/25 via-background to-background dark:from-muted/10'>
       <PostListPage page={page} tag={tag} q={q} />
     </div>
   );

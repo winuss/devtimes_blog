@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 import { Post } from '@/config/types';
-import { CalendarDays, Clock3, Eye } from 'lucide-react';
+import { CalendarDays, Clock3 } from 'lucide-react';
 
 interface Props {
   post: Post;
@@ -9,27 +9,28 @@ interface Props {
 
 export const PostHeader = ({ post }: Props) => {
   return (
-    <header className='mt-14 text-center'>
-      <h1 className='mb-5 text-3xl'>{post.title}</h1>
-      <div className='mb-3 text-base'>
+    <header className='mt-12 border-b border-border/70 pb-10 text-center sm:mt-16'>
+      <h1 className='mx-auto max-w-[42rem] text-balance text-3xl font-bold leading-tight tracking-tight text-foreground sm:text-4xl'>
+        {post.title}
+      </h1>
+      <div className='mt-5'>
         <Link
           href={`/${post.categoryPath}`}
-          className='font-semibold text-pink-600 no-underline underline-offset-4 hover:underline'
+          className='inline-flex items-center rounded-full bg-muted/60 px-3 py-1 text-sm font-medium text-pink-600 no-underline transition hover:bg-muted hover:underline dark:text-pink-400'
         >
           {post.categoryPublicName}
         </Link>
       </div>
-      <div className='flex justify-center gap-3 text-sm text-gray-500 dark:text-gray-400'>
-        <div className='flex items-center gap-1'>
-          <CalendarDays className='w-3.5' />
+      <div className='mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-muted-foreground'>
+        <div className='flex items-center gap-1.5'>
+          <CalendarDays className='size-4 shrink-0 opacity-70' aria-hidden />
           <span>{post.dateString}</span>
         </div>
-        <div className='flex items-center gap-1'>
-          <Clock3 className='w-3.5' />
-          <span>{post.readingMinutes}분</span>
+        <div className='flex items-center gap-1.5'>
+          <Clock3 className='size-4 shrink-0 opacity-70' aria-hidden />
+          <span>{post.readingMinutes}분 읽기</span>
         </div>
       </div>
-      <hr className='mt-5' />
     </header>
   );
 };

@@ -59,16 +59,18 @@ const PostDetail = async ({ params }: Props) => {
 
   const toc = parseToc(post.content);
   return (
-    <div className='prose mx-auto w-full max-w-[750px] px-5 dark:prose-invert sm:px-6'>
-      <PostHeader post={post} />
-      <TocTop toc={toc} />
-      <article className='relative'>
-        <TocSidebar toc={toc} />
-        <PostBody post={post} />
-      </article>
-      <hr />
-      <Giscus />
-      <FloatingButton />
+    <div className='min-h-[calc(100vh-4rem)] bg-gradient-to-b from-muted/15 via-background to-background pb-20 dark:from-muted/5'>
+      <div className='prose prose-neutral mx-auto w-full max-w-[min(42rem,100%-2rem)] px-4 dark:prose-invert sm:max-w-[46rem] sm:px-6'>
+        <PostHeader post={post} />
+        <TocTop toc={toc} />
+        <article className='relative pt-2'>
+          <TocSidebar toc={toc} />
+          <PostBody post={post} />
+        </article>
+        <hr className='my-12 border-border/80' />
+        <Giscus />
+        <FloatingButton />
+      </div>
     </div>
   );
 };

@@ -5,26 +5,27 @@ import IconLinkedin from '@/components/icon/LinkedIn';
 
 export const Footer = () => {
   return (
-    <footer className='pt-16 flex flex-col items-center justify-center gap-4 bg-[#f9fafb] py-8 text-center print:hidden'>
-      <div className='flex justify-center gap-4'>
-        <Link href='https://github.com/winuss' target='_blank'>
-          <IconGithub
-            className='fill-foreground transition hover:fill-pink-600'
-            height={30}
-            width={30}
-          />
+    <footer className='mt-auto flex flex-col items-center justify-center gap-6 border-t border-border/80 bg-muted/30 py-14 text-center print:hidden dark:bg-muted/10'>
+      <div className='flex justify-center gap-5'>
+        <Link
+          href='https://github.com/winuss'
+          target='_blank'
+          className='rounded-full p-2 text-foreground ring-1 ring-border/60 transition hover:bg-background hover:text-pink-600 hover:ring-pink-500/30'
+        >
+          <IconGithub className='fill-current transition' height={26} width={26} />
         </Link>
-        <Link href='https://www.linkedin.com/in/' target='_blank'>
-          <IconLinkedin
-            className='fill-foreground transition hover:fill-pink-600'
-            height={30}
-            width={30}
-          />
+        <Link
+          href='https://www.linkedin.com/in/'
+          target='_blank'
+          className='rounded-full p-2 text-foreground ring-1 ring-border/60 transition hover:bg-background hover:text-pink-600 hover:ring-pink-500/30'
+        >
+          <IconLinkedin className='fill-current transition' height={26} width={26} />
         </Link>
       </div>
-      <div>
-        © 2024. <span className='font-semibold'>Devtimes Blog</span> all rights reserved.
-      </div>
+      <p className='text-sm text-muted-foreground'>
+        © {new Date().getFullYear()}{' '}
+        <span className='font-semibold text-foreground'>Devtimes Blog</span> · All rights reserved.
+      </p>
     </footer>
   );
 };
