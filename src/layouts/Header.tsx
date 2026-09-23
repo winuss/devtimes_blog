@@ -1,188 +1,31 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useState, useRef, useEffect, Suspense } from 'react';
+import { usePathname } from 'next/navigation';
 
+import logo from '@/app/icon.png';
 import ScrollProgressBar from '@/components/common/ScrollProgressBar';
 import { Button } from '@/components/ui/button';
 import { useSpyElem } from '@/hook/useSpy';
-import ThemeSwitch from '@/layouts/theme/Switch';
+import { HeaderSearch } from '@/layouts/HeaderSearch';
 import { cn } from '@/lib/utils';
-import { Github, Search, X } from 'lucide-react';
-
-const navList = [
-  { name: 'Home', href: '/' },
-  { name: 'About', href: '/about' },
-];
+import { Github, User } from 'lucide-react';
 
 const mainHome = {
-  name: 'DEVTIMES',
-  href: 'https://devtimes.com'
-}
-
-// 검색 컴포넌트 내부
-const HeaderSearchInner = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [query, setQuery] = useState('');
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const inputRef = useRef<HTMLInputElement>(null);
-  
-  // 현재 검색어 가져오기
-  useEffect(() => {
-    const currentQuery = searchParams.get('q') || '';
-    setQuery(currentQuery);
-  }, [searchParams]);
-
-  // 검색 실행
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (query.trim()) {
-      const params = new URLSearchParams();
-      params.set('q', query.trim());
-      router.push(`/?${params.toString()}`);
-    } else {
-      router.push('/');
-    }
-    setIsOpen(false);
-  };
-
-  // 검색창 열기/닫기
-  const toggleSearch = () => {
-    setIsOpen(!isOpen);
-    if (!isOpen) {
-      setTimeout(() => inputRef.current?.focus(), 100);
-    }
-  };
-
-  // Escape 키로 닫기
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setIsOpen(false);
-      }
-      // Cmd/Ctrl + K로 검색창 열기
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        setIsOpen(prev => !prev);
-        if (!isOpen) {
-          setTimeout(() => inputRef.current?.focus(), 100);
-        }
-      }
-    };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen]);
-
-  return (
-    <div className="relative">
-      {/* 검색 버튼 */}
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={toggleSearch}
-        className={cn(
-          "hidden sm:flex items-center gap-2 px-3 py-1.5 text-sm text-muted-foreground",
-          "border rounded-md hover:bg-muted/50 transition-colors",
-          "min-w-[280px] justify-between"
-        )}
-      >
-        <div className="flex items-center gap-2">
-          <Search className="size-4" />
-          <span>검색...</span>
-        </div>
-        <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
-          <span className="text-xs">⌘</span>K
-        </kbd>
-      </Button>
-
-      {/* 모바일 검색 버튼 */}
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={toggleSearch}
-        className="sm:hidden"
-        aria-label="검색"
-      >
-        <Search className="size-4" />
-      </Button>
-
-      {/* 검색 오버레이 */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm"
-          onClick={() => setIsOpen(false)}
-          role="dialog"
-          aria-modal="true"
-          aria-label="블로그 검색"
-        >
-          <div className="flex min-h-screen items-start justify-center p-4 pt-16">
-            <div className="relative w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
-              <form onSubmit={handleSearch} className="relative">
-                <div className="flex items-center rounded-xl border border-border bg-card shadow-lg shadow-black/10 dark:shadow-black/40">
-                  <Search className="ml-3 size-4 text-muted-foreground" />
-                  <input
-                    ref={inputRef}
-                    type="text"
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    placeholder="제목, 내용, 태그로 검색..."
-                    aria-label="검색어"
-                    enterKeyHint="search"
-                    className="flex-1 rounded-xl bg-transparent px-3 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setIsOpen(false)}
-                    className="mr-1"
-                    aria-label="검색 닫기"
-                  >
-                    <X className="size-4" />
-                  </Button>
-                </div>
-              </form>
-              <div className="mt-2 text-center text-xs text-muted-foreground">
-                Enter를 눌러 검색 • Esc로 닫기
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
+  name: 'DevTimes',
+  href: 'https://devtimes.com',
 };
 
-// 검색 컴포넌트 (Suspense 감싸진)
-const HeaderSearch = () => {
-  return (
-    <Suspense fallback={
-      <Button
-        variant="ghost"
-        size="sm"
-        className={cn(
-          "hidden sm:flex items-center gap-2 px-3 py-1.5 text-sm text-muted-foreground",
-          "border rounded-md min-w-[280px] justify-between opacity-50"
-        )}
-        disabled
-      >
-        <div className="flex items-center gap-2">
-          <Search className="size-4" />
-          <span>로딩중...</span>
-        </div>
-      </Button>
-    }>
-      <HeaderSearchInner />
-    </Suspense>
-  );
-};
+// 블로그 내부 메뉴
+const navList = [{ name: 'About', href: '/about', icon: User }];
 
 export const Header = () => {
   const pathname = usePathname();
   const isMainList = pathname === '/';
   const { ref, marginTop } = useSpyElem(65);
+
+  const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
 
   return (
     <nav
@@ -190,50 +33,54 @@ export const Header = () => {
       ref={ref}
       className={cn(
         'z-40 flex w-full flex-col items-center justify-center border-b border-border/80 print:hidden',
-        'bg-background/80 shadow-sm shadow-black/[0.03] backdrop-blur-md supports-[backdrop-filter]:bg-background/70',
+        'bg-background/80 supports-[backdrop-filter]:bg-background/70 shadow-sm shadow-black/[0.03] backdrop-blur-md',
         'dark:shadow-black/20',
-        isMainList ? 'fixed' : 'static',
+        isMainList ? 'fixed' : 'static'
       )}
     >
       <div className='flex h-16 w-full max-w-[1200px] items-center justify-between gap-3 px-4 sm:px-6'>
-        <div className='flex flex-wrap items-center gap-1 sm:gap-1.5'>
-            <Link
-              href={mainHome.href}
-              key={mainHome.name}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={cn(
-                'rounded-full px-3 py-1.5 text-center text-xs font-semibold transition-colors sm:text-sm',
-                'bg-primary text-primary-foreground shadow-sm hover:bg-primary/90',
-              )}
-            >
-              {mainHome.name}
-            </Link>
-          {navList.map((navItem) => {
-            const active =
-              navItem.href === '/'
-                ? pathname === '/'
-                : pathname === navItem.href || pathname.startsWith(`${navItem.href}/`);
-            return (
-            <Link
-              href={navItem.href}
-              key={navItem.name}
-              className={cn(
-                'rounded-full px-3 py-1.5 text-center text-xs transition-colors sm:text-sm',
-                active
-                  ? 'bg-muted font-medium text-foreground'
-                  : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
-              )}
-            >
-              {navItem.name}
-            </Link>
-            );
-          })}
+        {/* Brand */}
+        <div className='flex items-center gap-2'>
+          <Link
+            href={mainHome.href}
+            target='_blank'
+            rel='noopener noreferrer'
+            className='group inline-flex items-center gap-2'
+          >
+            <Image
+              src={logo}
+              alt=''
+              aria-hidden
+              className='h-6 w-6 shrink-0 transition-opacity duration-200 group-hover:opacity-80'
+            />
+            <span className='text-xl font-bold tracking-tight'>{mainHome.name}</span>
+          </Link>
+          <Link
+            href='/'
+            className='rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground'
+          >
+            Blog
+          </Link>
         </div>
 
-        <div className='flex items-center gap-3'>
+        <div className='flex items-center gap-1'>
+          {navList.map(({ name, href, icon: Icon }) => (
+            <Link
+              key={name}
+              href={href}
+              className={cn(
+                'flex items-center gap-2 rounded-md p-2 text-sm transition-colors hover:bg-muted',
+                isActive(href)
+                  ? 'font-medium text-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
+              )}
+            >
+              <Icon className='size-4' />
+              <span className='hidden sm:inline'>{name}</span>
+            </Link>
+          ))}
+          <span className='mx-2 hidden h-4 w-px bg-border sm:block' aria-hidden />
           <HeaderSearch />
-          {/* <ThemeSwitch /> */}
           <Button asChild variant='ghost' size='icon'>
             <Link
               href='https://github.com/winuss'
