@@ -1,4 +1,5 @@
 import { HeadingItem, Post, PostMatter } from '@/config/types';
+import { CATEGORY_DISPLAY_NAMES } from '@/config/const';
 import dayjs from 'dayjs';
 import fs from 'fs';
 import { sync } from 'glob';
@@ -99,6 +100,7 @@ const generateExcerpt = (raw: string, maxLen = 240) => {
 
 // category folder name을 public name으로 변경 : dir_name -> Dir Name
 export const getCategoryPublicName = (dirPath: string) =>
+  CATEGORY_DISPLAY_NAMES[dirPath] ??
   dirPath
     .split('_')
     .map((token) => token[0].toUpperCase() + token.slice(1, token.length))

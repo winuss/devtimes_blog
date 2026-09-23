@@ -3,14 +3,14 @@
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useMemo, useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, Hash, X } from 'lucide-react';
+import { ChevronDown, Hash } from 'lucide-react';
 
 interface Props {
   tags: string[];
   currentSearchQuery?: string;
 }
 
-const TagFilterClient = ({ tags, currentSearchQuery }: Props) => {
+const TagFilterClient = ({ tags }: Props) => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const currentTag = searchParams.get('tag') || undefined;
@@ -45,52 +45,30 @@ const TagFilterClient = ({ tags, currentSearchQuery }: Props) => {
     } else {
       params.set('tag', tag);
     }
+    params.delete('page');
     router.push(`/?${params.toString()}`);
     setIsDropdownOpen(false);
     setSearchQuery('');
   };
 
-  const handleTagClear = () => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete('tag');
-    router.push(`/?${params.toString()}`);
-  };
 
 
   if (!tags.length) return null;
 
   return (
-    <div className='mb-8 flex flex-wrap items-center justify-end gap-2'>
-      {currentSearchQuery ? (
-        <span className='mr-auto rounded-full border border-border/80 bg-muted/40 px-3 py-1.5 text-xs font-medium text-foreground sm:text-sm'>
-          검색: &quot;{currentSearchQuery}&quot;
-        </span>
-      ) : null}
-
-      <div className='flex flex-wrap items-center justify-end gap-2'>
-        {currentTag && (
-          <div className='flex items-center gap-1 rounded-full border border-border/70 bg-muted/50 px-3 py-1 text-sm'>
-            <span className='font-medium text-foreground'>#{currentTag}</span>
-            <button
-              type='button'
-              onClick={handleTagClear}
-              className='rounded-full p-0.5 text-muted-foreground transition hover:bg-background hover:text-destructive'
-              title='태그 필터 제거'
-            >
-              <X className='size-3.5' />
-            </button>
-          </div>
-        )}
-
+    <div className='shrink-0'>
+      <div>
         <div className='relative' ref={dropdownRef}>
           <Button
             variant='outline'
             size='sm'
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             className='border-border/80 text-xs shadow-sm'
+            aria-expanded={isDropdownOpen}
+            aria-haspopup='listbox'
           >
             <Hash className='mr-1 size-3' />
-            태그 선택
+            {currentTag ? currentTag : '태그'}
             <ChevronDown className={`ml-1 size-3 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
           </Button>
 
@@ -100,6 +78,7 @@ const TagFilterClient = ({ tags, currentSearchQuery }: Props) => {
                 <input
                   type='text'
                   placeholder='태그 검색...'
+                  autoFocus
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className='w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'

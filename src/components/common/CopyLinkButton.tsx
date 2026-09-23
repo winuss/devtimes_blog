@@ -24,7 +24,7 @@ const CopyLinkButton = ({ size = 16, className, url, variant = 'outline' }: Butt
 
   const SuccessToastTitle = (
     <div className='flex items-center gap-3'>
-      <Check size={16} /> Successfully Copied
+      <Check size={16} /> 링크를 복사했어요
     </div>
   );
 
@@ -32,7 +32,7 @@ const CopyLinkButton = ({ size = 16, className, url, variant = 'outline' }: Butt
 
   const FailToastTitle = (
     <div className='flex items-center gap-3'>
-      <XCircle size={16} /> Copy Failed
+      <XCircle size={16} /> 링크 복사에 실패했어요
     </div>
   );
 
@@ -51,8 +51,8 @@ const CopyLinkButton = ({ size = 16, className, url, variant = 'outline' }: Butt
   };
 
   return (
-    <Button variant={variant} size='icon' onClick={handleCopy} className={className}>
-      <span className='sr-only'>Copy</span>
+    <Button variant={variant} size='icon' onClick={handleCopy} className={className} title='링크 복사'>
+      <span className='sr-only'>링크 복사</span>
       {copied ? <Check size={size} /> : <Copy size={size} />}
     </Button>
   );

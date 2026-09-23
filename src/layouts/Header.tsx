@@ -103,13 +103,20 @@ const HeaderSearchInner = () => {
         size="icon"
         onClick={toggleSearch}
         className="sm:hidden"
+        aria-label="검색"
       >
         <Search className="size-4" />
       </Button>
 
       {/* 검색 오버레이 */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm" onClick={() => setIsOpen(false)}>
+        <div
+          className="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm"
+          onClick={() => setIsOpen(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="블로그 검색"
+        >
           <div className="flex min-h-screen items-start justify-center p-4 pt-16">
             <div className="relative w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
               <form onSubmit={handleSearch} className="relative">
@@ -120,7 +127,9 @@ const HeaderSearchInner = () => {
                     type="text"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    placeholder="블로그에서 검색..."
+                    placeholder="제목, 내용, 태그로 검색..."
+                    aria-label="검색어"
+                    enterKeyHint="search"
                     className="flex-1 rounded-xl bg-transparent px-3 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
                   />
                   <Button
@@ -129,6 +138,7 @@ const HeaderSearchInner = () => {
                     size="icon"
                     onClick={() => setIsOpen(false)}
                     className="mr-1"
+                    aria-label="검색 닫기"
                   >
                     <X className="size-4" />
                   </Button>
@@ -225,7 +235,12 @@ export const Header = () => {
           <HeaderSearch />
           {/* <ThemeSwitch /> */}
           <Button asChild variant='ghost' size='icon'>
-            <Link href='https://github.com/winuss' target='_blank'>
+            <Link
+              href='https://github.com/winuss'
+              target='_blank'
+              rel='noopener noreferrer'
+              aria-label='GitHub'
+            >
               <Github className='size-[1.2rem]' />
             </Link>
           </Button>

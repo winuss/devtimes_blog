@@ -11,3 +11,9 @@ export const ADSENSE_LIST_SLOT = '5130375812';
 
 // 태그 필터 표시 기본 개수 (나머지는 접기)
 export const TAGS_INITIAL_VISIBLE_COUNT = 12;
+
+// 기본 규칙(dir_name -> Dir Name)으로 표기가 어색한 카테고리 이름
+export const CATEGORY_DISPLAY_NAMES: Record<string, string> = {
+  ai: 'AI',
+  javascript: 'JavaScript',
+};

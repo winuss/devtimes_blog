@@ -24,6 +24,8 @@ const FloatingButton = () => {
           variant={visible ? 'default' : 'outline'}
           onClick={toggleVisible}
           ref={buttonRef}
+          aria-label={visible ? '메뉴 닫기' : '빠른 메뉴 열기'}
+          aria-expanded={visible}
           className={cn('absolute bottom-0 right-0 z-10 transition')}
         >
           <Bolt size={22} />

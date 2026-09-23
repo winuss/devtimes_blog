@@ -18,9 +18,11 @@ const TableOfContent = ({ toc }: Props) => {
   return (
     <aside className='not-prose absolute -top-[200px] left-full -mb-[100px] hidden h-[calc(100%+150px)] xl:block '>
       <div className='sticky bottom-0  top-[200px] z-10 ml-[5rem] mt-[200px] w-[200px]'>
-        <div className='mb-4 border-l px-4 py-2'>
-          <div className='mb-1 font-bold'>On this page</div>
-          <ul className='text-xs'>
+        <div className='mb-4 py-2'>
+          <div className='mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground'>
+            목차
+          </div>
+          <ul className='border-l border-border text-[13px] leading-snug'>
             {toc.map((item) => {
               const isH3 = item.indent === 1;
               const isIntersecting = activeIdList.includes(item.link);
@@ -28,9 +30,11 @@ const TableOfContent = ({ toc }: Props) => {
                 <li
                   key={item.link}
                   className={cn(
-                    isH3 && 'ml-4',
-                    isIntersecting && 'font-medium text-pink-600',
-                    'py-1 transition'
+                    '-ml-px border-l py-1 pl-3 transition-colors',
+                    isH3 && 'pl-6',
+                    isIntersecting
+                      ? 'border-pink-500 font-medium text-pink-600'
+                      : 'border-transparent text-muted-foreground hover:text-foreground'
                   )}
                 >
                   <Link href={item.link}>{item.text}</Link>
