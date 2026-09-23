@@ -6,7 +6,16 @@ import { PostBody } from '@/components/post_detail/PostBody';
 import { PostHeader } from '@/components/post_detail/PostHeader';
 import TocSidebar from '@/components/post_detail/TableOfContentSidebar';
 import TocTop from '@/components/post_detail/TableOfContentTop';
-import { baseDomain } from '@/config/const';
+import {
+  baseDomain,
+  blogAuthor,
+  blogAuthorURL,
+  blogLocale,
+  blogName,
+  blogThumbnailURL,
+  rssAlternateTypes,
+} from '@/config/const';
+import { Post } from '@/config/types';
 import { getPostDetail, getPostPaths, parsePostAbstract, parseToc } from '@/lib/post';
 
 type Props = {
@@ -16,32 +25,82 @@ type Props = {
 // 허용된 param 외 접근시 404
 export const dynamicParams = false;
 
+// 썸네일이 없으면 블로그 기본 이미지로 대체
+const getImageURL = (post: Post) =>
+  post.thumbnail ? new URL(post.thumbnail, baseDomain).toString() : blogThumbnailURL;
+
+const toISO = (value?: Date | string) => (value ? new Date(value).toISOString() : undefined);
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { category, slug } = await params;
   const post = await getPostDetail(category, slug);
+  if (!post) return {};
 
-  const title = `${post?.title} | DevTimes Blog`;
-  const imageURL = `${baseDomain}${post?.thumbnail}`;
+  const title = `${post.title} | DevTimes Blog`;
+  const imageURL = getImageURL(post);
 
   return {
     title,
-    description: post?.desc,
-
+    description: post.desc,
+    keywords: post.tags,
+    alternates: { canonical: post.url, types: rssAlternateTypes },
     openGraph: {
       title,
-      description: post?.desc,
+      description: post.desc,
       type: 'article',
-      publishedTime: post?.date.toISOString(),
-      url: `${baseDomain}${post?.url}`,
+      siteName: blogName,
+      locale: blogLocale,
+      publishedTime: toISO(post.date),
+      modifiedTime: toISO(post.updated ?? post.date),
+      authors: [blogAuthorURL],
+      tags: post.tags,
+      url: post.url,
       images: [imageURL],
     },
     twitter: {
+      card: 'summary_large_image',
       title,
-      description: post?.desc,
+      description: post.desc,
       images: [imageURL],
     },
   };
 }
+
+const buildJsonLd = (post: Post) => {
+  const url = `${baseDomain}${post.url}`;
+  return [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'BlogPosting',
+      headline: post.title,
+      description: post.desc,
+      image: [getImageURL(post)],
+      datePublished: toISO(post.date),
+      dateModified: toISO(post.updated ?? post.date),
+      author: { '@type': 'Person', name: blogAuthor, url: blogAuthorURL },
+      publisher: { '@type': 'Organization', name: blogName, url: baseDomain },
+      mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+      url,
+      inLanguage: 'ko-KR',
+      keywords: post.tags?.join(', '),
+      articleSection: post.categoryPublicName,
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: blogName, item: baseDomain },
+        {
+          '@type': 'ListItem',
+          position: 2,
+          name: post.categoryPublicName,
+          item: `${baseDomain}/?category=${encodeURIComponent(post.categoryPath)}`,
+        },
+        { '@type': 'ListItem', position: 3, name: post.title, item: url },
+      ],
+    },
+  ];
+};
 
 export function generateStaticParams() {
   const postPaths: string[] = getPostPaths();
@@ -61,6 +120,10 @@ const PostDetail = async ({ params }: Props) => {
   return (
     <div className='min-h-[calc(100vh-4rem)] bg-gradient-to-b from-muted/15 via-background to-background pb-20 dark:from-muted/5'>
       <div className='prose prose-neutral mx-auto w-full max-w-[min(42rem,100%-2rem)] px-4 dark:prose-invert sm:max-w-[46rem] sm:px-6'>
+        <script
+          type='application/ld+json'
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(buildJsonLd(post)) }}
+        />
         <PostHeader post={post} />
         <TocTop toc={toc} />
         <article className='relative pt-2'>

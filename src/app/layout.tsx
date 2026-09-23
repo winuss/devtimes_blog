@@ -1,8 +1,16 @@
 import type { Metadata, Viewport } from 'next';
- 
 
 import { Toaster } from '@/components/ui/toaster';
-import { baseDomain, blogDesc, blogName, blogThumbnailURL } from '@/config/const';
+import {
+  baseDomain,
+  blogAuthor,
+  blogAuthorURL,
+  blogDesc,
+  blogLocale,
+  blogName,
+  blogThumbnailURL,
+  rssAlternateTypes,
+} from '@/config/const';
 import '@/config/globals.css';
 import { Footer } from '@/layouts/Footer';
 import { Header } from '@/layouts/Header';
@@ -13,10 +21,15 @@ export const metadata: Metadata = {
   metadataBase: new URL(baseDomain),
   title: blogName,
   description: blogDesc,
+  applicationName: blogName,
+  authors: [{ name: blogAuthor, url: blogAuthorURL }],
+  // canonical은 페이지별로 지정 (여기 두면 하위 페이지가 모두 '/'를 상속함)
+  alternates: { types: rssAlternateTypes },
   openGraph: {
     title: blogName,
     description: blogDesc,
     siteName: blogName,
+    locale: blogLocale,
     images: [blogThumbnailURL],
     type: 'website',
   },
@@ -44,8 +57,8 @@ export default function RootLayout({
       <head>
         <script
           async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1154659137489563"
-          crossOrigin="anonymous"
+          src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1154659137489563'
+          crossOrigin='anonymous'
         />
       </head>
       <body className='flex min-h-screen flex-col font-pretendard'>

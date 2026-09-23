@@ -58,6 +58,11 @@ tags:
 ---
 ```
 
+- SEO 기준:
+  - `title`은 검색 결과에서 잘리지 않게 40자 안팎으로 쓰고, 핵심 키워드(모델명·제품명)를 앞쪽에 둔다. 페이지 제목 뒤에 ` | DevTimes Blog`가 자동으로 붙는다.
+  - `desc`는 80~120자로 쓰고 제목을 반복하지 않는다. meta description, og, RSS, JSON-LD에 그대로 쓰인다.
+  - `tags`는 meta keywords, `article:tag`, JSON-LD keywords로 들어간다.
+  - canonical, og, JSON-LD(BlogPosting·BreadcrumbList)는 `src/app/(blog)/[slug]/page.tsx`에서 자동으로 만든다. 글에서 따로 할 건 없다.
 - 이미지를 쓰면 글 폴더에 넣고 `/posts/ai/news/{slug}/파일명` 절대경로로 참조한다. 썸네일은 선택이다.
 
 ## 5. 게시 날짜

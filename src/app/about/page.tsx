@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/
 import * as D from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Section } from '@/components/ui/section';
+import { blogLocale, blogName, blogThumbnailURL, rssAlternateTypes } from '@/config/const';
 import { DATAS } from '@/config/types';
 import { getSortedProjectList } from '@/lib/project';
 import { cn } from '@/lib/utils';
@@ -17,9 +18,26 @@ import { GlobeIcon, MailIcon } from 'lucide-react';
 
 export function generateMetadata(): Metadata {
   const data = DATAS.data;
+  const title = `${data.name} | ${data.about}`;
   return {
-    title: `${data.name} | ${data.about}`,
+    title,
     description: data.summary,
+    alternates: { canonical: '/about', types: rssAlternateTypes },
+    openGraph: {
+      title,
+      description: data.summary,
+      siteName: blogName,
+      url: '/about',
+      locale: blogLocale,
+      images: [blogThumbnailURL],
+      type: 'profile',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description: data.summary,
+      images: [blogThumbnailURL],
+    },
   };
 }
 
@@ -27,14 +45,18 @@ export default async function AboutPage() {
   const RESUME_DATA = DATAS.data;
   const projectList = await getSortedProjectList();
   return (
-    <main className='container relative mx-auto scroll-my-12 overflow-auto p-0 sm:p-0 md:p-0 print:p-12 print:pt-0  mt-[-60px]'>
+    <main className='container relative mx-auto mt-[-60px] scroll-my-12 overflow-auto p-0 sm:p-0 md:p-0 print:p-12  print:pt-0'>
       {/* Hero */}
       <section className='relative overflow-hidden border-b bg-gradient-to-b from-white to-gray-50 px-6 py-12 dark:from-slate-950 dark:to-slate-900 sm:px-9 md:px-16'>
         <div className='mx-auto flex w-full max-w-4xl flex-col items-center justify-between gap-8 sm:flex-row'>
           <div className='flex-1 space-y-3 text-center sm:text-left'>
-            <span className='inline-block rounded-full border px-3 py-1 text-xs text-gray-600 dark:text-gray-300'>About</span>
-            <h1 className='text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl'>{RESUME_DATA.name}</h1>
- 
+            <span className='inline-block rounded-full border px-3 py-1 text-xs text-gray-600 dark:text-gray-300'>
+              About
+            </span>
+            <h1 className='text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl'>
+              {RESUME_DATA.name}
+            </h1>
+
             <div className='flex flex-wrap items-center justify-center gap-2 sm:justify-start'>
               {RESUME_DATA.skills.slice(0, 6).map((s) => (
                 <Badge key={s} variant='secondary' className='rounded-full'>
@@ -106,7 +128,9 @@ export default async function AboutPage() {
               <CardHeader className='pb-2'>
                 <h3 className='text-lg font-semibold'>Intro</h3>
                 <CardDescription>
-                  <span className='block'>Hi, I&apos;m <b>Yoo, Seongsu</b></span>
+                  <span className='block'>
+                    Hi, I&apos;m <b>Yoo, Seongsu</b>
+                  </span>
                   <span className='block'>FE Developer 🚀 from Korea</span>
                 </CardDescription>
               </CardHeader>
@@ -144,7 +168,9 @@ export default async function AboutPage() {
               <CardContent>
                 <div className='grid grid-cols-1 gap-6 sm:grid-cols-3'>
                   <div>
-                    <h4 className='mb-2 text-sm font-medium text-foreground'>Framework &amp; Library</h4>
+                    <h4 className='mb-2 text-sm font-medium text-foreground'>
+                      Framework &amp; Library
+                    </h4>
                     <ul className='list-disc pl-5 text-sm text-muted-foreground'>
                       <li>React, Next.js, Redux, TanStack Query</li>
                       <li>Node.js, Express, NestJS</li>
