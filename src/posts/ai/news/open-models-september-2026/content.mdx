@@ -1,0 +1,134 @@
+---
+title: "2026년 9월, 비미국·오픈 모델 러시 정리: DeepSeek V4.1 Flash부터 MiniMax H3 Max, Sakana Fugu Max까지"
+date: 2026-09-17
+desc: "9월 초 연달아 등장한 DeepSeek V4.1 Flash, MiniMax H3 기반 H3 Max, Sakana AI의 Fugu Max를 가중치 공개 여부, 라이선스, 가격 관점에서 비교하고, 셀프호스팅·비용·벤더 다변화·컴플라이언스 측면에서 개발자가 확인해야 할 점을 정리합니다."
+tags:
+  - AI
+  - OpenWeights
+  - OpenSource
+  - DeepSeek
+  - LLM
+  - SelfHosting
+  - Trend
+---
+
+9월 들어 미국 밖 연구소들이 공개한 모델 소식이 한꺼번에 쏟아졌습니다. 중국 DeepSeek는 MIT 라이선스 텍스트·비전 모델을, 일본 Sakana AI는 오픈 모델 여러 개를 묶어 쓰는 "오케스트레이션 모델"을 내놓았습니다. 동영상 쪽에서는 MiniMax가 공개한 가중치를 미국 추론 업체 fal이 재학습한 H3 Max가 리더보드 상위권에 올랐습니다.
+
+이름만 보면 모두 "새 오픈 모델"처럼 보이지만, 실제로 **가중치를 받아 직접 돌릴 수 있는지**, **어떤 라이선스인지**, **누가 만든 모델인지**가 꽤 다릅니다. 이 글에서는 확인 가능한 사실만 추려 각 모델의 성격을 정리하고, 개발자 입장에서 무엇을 봐야 하는지 짚어 보겠습니다.
+
+---
+
+## 🐋 DeepSeek V4.1 Flash: 작은 이름, 큰 변화
+
+DeepSeek는 9월 10일 **DeepSeek-V4.1-Flash**를 공개했습니다. 이름에 Flash가 붙었지만, 이번 발표에서 가장 눈에 띄는 모델입니다.
+
+- **구조**: 총 552B 파라미터의 MoE 모델입니다. 새로 도입한 Causal Encoder-Decoder 구조 덕분에 토큰당 활성 파라미터가 입력(prefill) 8B, 출력(decode) 16B 수준입니다.
+- **컨텍스트/모달리티**: Hugging Face 모델 카드 기준 최대 1M 토큰 컨텍스트를 지원하고, 이미지 입력을 네이티브로 처리합니다. 추론 강도(reasoning effort)를 1~100 사이에서 연속적으로 조절하는 옵션도 있습니다.
+- **KV 캐시 절감**: DeepSeek는 KV 캐시 요구량이 이전 대비 HBM 기준 약 1/4로 줄었다고 밝혔습니다. SiliconANGLE은 이를 토큰당 약 890바이트로 전했습니다. 컨텍스트가 긴 에이전트 워크로드에서 서빙 비용과 직결되는 부분입니다.
+- **라이선스**: **MIT**이며, 가중치는 Hugging Face(`deepseek-ai/DeepSeek-V4.1-Flash`)에 올라와 있습니다. 모델 카드에 vLLM, SGLang 실행 예시도 포함되어 있습니다.
+- **성능 주장**: DeepSeek는 여러 외부 테스트에서 이 모델이 더 큰 V4-Pro보다 성능, 비용, 속도 모든 면에서 앞선다고 주장합니다. SiliconANGLE이 인용한 수치로는 Terminal-Bench 2.1에서 90.6점을 기록했다고 합니다. 다만 이는 **회사 측 발표 수치**이므로, 실제 업무에 적용하기 전에 자체 평가가 필요합니다.
+- **API 가격**: SiliconANGLE 보도 기준으로 오프피크 시간대에 입력(캐시 미적용) 100만 토큰당 $0.15, 출력 $0.60이고, 평일 피크 시간대에는 두 배입니다. DeepSeek는 8월부터 피크/오프피크 요금제(오프피크는 피크의 50%)를 운영하고 있습니다.
+
+API를 쓰는 분이라면 모델 라우팅 변경을 꼭 확인해야 합니다. 공식 changelog에 따르면 새 모델 ID는 `deepseek-flash`입니다. 기존 `deepseek-v4-flash`와 `deepseek-v4-flash-vision-exp` 호출은 호환을 위해 V4.1 Flash로 연결됩니다. V4-Pro 요청도 9월 14일부터 처리 방식이 바뀐다고 공지되었는데, 뉴스 페이지와 changelog의 표현에 차이가 있습니다. 운영 환경에서 V4-Pro를 쓰고 있다면 최신 공식 문서를 직접 확인하시길 권합니다.
+
+---
+
+## 🎬 MiniMax H3와 "H3 Max": 이름이 헷갈리는 이유
+
+MiniMax H3 Max는 이름 때문에 MiniMax의 상위 모델로 오해하기 쉽습니다. 정확히 정리하면 다음과 같습니다.
+
+- **MiniMax H3(원본)**: MiniMax가 만든 범용 **동영상 생성 모델**입니다. 7월 말 API로 먼저 공개했고, 8월 3일 Hugging Face에 가중치를 올렸습니다. 약 33B 파라미터의 Transformer 기반이며, 텍스트·이미지·영상·오디오를 참조 입력으로 받아 4~15초 길이, 최대 2K, 24fps 영상을 스테레오 오디오와 함께 생성합니다.
+- **라이선스**: MIT나 Apache 같은 범용 오픈소스 라이선스가 아니라 **MiniMax H3 Community License**입니다. 모델 카드에는 미국·EU·영국·한국 사용자용 신청 양식이 안내되어 있으므로, 상업적으로 쓰려면 약관을 먼저 확인해야 합니다.
+- **H3 Max**: MiniMax가 아니라 **fal**이 H3의 공개 가중치를 재학습(post-training)하고 자체 추론 스택에 올린 버전입니다. fal 블로그 공지는 8월 27일에 올라왔습니다. 품질보다 속도를 우선한 모델로, 해상도는 768p까지입니다. fal은 5초 영상을 약 3초 안에 만들며 공식 MiniMax H3 엔드포인트보다 처리량이 약 35배 높다고 밝혔습니다.
+- **리더보드·속도**: fal은 H3 Max가 Design Arena와 Artificial Analysis(오디오 포함 이미지→영상)의 영상 리더보드에서 1위라고 소개합니다. 5초 768p 영상 생성 시간 같은 속도 수치는 fal이 9월 8일에 자체 측정한 값입니다. 흔히 언급되는 "9월 8일"은 출시일이 아니라 이 측정 날짜입니다.
+
+개발자 입장에서 H3 Max는 **오픈 가중치로 만든 파생 모델이 호스팅 서비스로 판매되는 사례**입니다. H3 Max 자체의 가중치가 공개되었는지는 확인되지 않았습니다. 따라서 직접 운영하려면 원본 H3를 받아야 하고, 속도가 중요하면 fal API를 쓰는 식으로 선택지가 나뉩니다.
+
+---
+
+## 🐡 Sakana AI Fugu Max: 모델이 아니라 "모델을 고르는 모델"
+
+일본 Sakana AI는 9월 11일 **Fugu Max**와 **Fugu Ultra v2**를 함께 공개했습니다. Fugu는 6월에 처음 나온 시스템으로, 단일 파운데이션 모델이 아니라 **여러 모델로 이루어진 에이전트 풀에 작업을 나눠 맡기고, 필요하면 자기 자신도 재귀적으로 호출하는 오케스트레이터**입니다.
+
+- **Fugu Max의 특징**: 오케스트레이션 대상 풀을 오픈 가중치 모델과 특화 모델 위주로 크게 늘렸습니다. NVIDIA와 협업해 Nemotron 계열도 포함했다고 합니다.
+- **가격**: 100만 토큰당 입력 $2, 출력 $6, 캐시 입력 $0.25입니다. 웹 검색이나 fetch 도구는 호출당 별도 요금이 붙습니다. 상위 제품인 Fugu Ultra v2는 입력 $5, 출력 $30부터 시작합니다.
+- **성능 주장**: Sakana는 비슷한 가격대 비교에서 10개 벤치마크 중 6개(Terminal Bench 2.1 등)에서 가장 높은 점수를 받았다고 발표했습니다. 이 역시 **자체 발표 수치**이며, AI Weekly는 제3자 검증이 인용되지 않았다는 점을 한계로 짚었습니다.
+- **제공 방식**: OpenAI 호환 API로 제공되며 OpenRouter, Vercel 등에서도 쓸 수 있습니다. **가중치는 공개되지 않았고**, 공식 페이지 기준 **EU/EEA에서는 사용할 수 없습니다**.
+
+Fugu Max는 "오픈 모델을 직접 돌리는 것"이 아니라 **"여러 오픈 모델을 조합하는 일을 서비스로 사는 것"**에 가깝습니다. 오픈 모델 생태계가 커지면서 그 위에 라우팅 계층을 얹는 비즈니스가 생겨나고 있다는 신호로 볼 수 있습니다.
+
+---
+
+## 📊 한눈에 비교
+
+| 항목 | DeepSeek V4.1 Flash | MiniMax H3 (원본) | H3 Max (fal) | Sakana Fugu Max |
+| --- | --- | --- | --- | --- |
+| 유형 | 텍스트+비전 LLM (MoE) | 동영상+오디오 생성 | H3 파생 동영상 모델 | 멀티 모델 오케스트레이터 |
+| 공개 시점 | 2026-09-10 | 가중치 2026-08-03 | 2026-08-27 공지 | 2026-09-11 |
+| 가중치 | 공개 (HF) | 공개 (HF) | 공개 확인 안 됨 (호스팅) | 비공개 (API) |
+| 라이선스 | MIT | H3 Community License | fal 서비스 약관 | Sakana API 약관 |
+| 비용 포인트 | 오프피크 $0.15 / $0.60 (1M 토큰) | 셀프호스팅 시 GPU 비용 | 호출당 과금 | $2 / $6 (1M 토큰) |
+
+> 가격은 발표 시점 기준이며, 피크 시간대·캐시 여부·지역에 따라 달라질 수 있습니다.
+
+---
+
+## 🌏 이번 흐름의 배경
+
+이 모델들이 나온 시기의 주변 상황도 함께 알아 두면 좋습니다.
+
+- **Hugging Face 인수**: 9월 3일 NVIDIA가 Hugging Face를 약 129억 3천만 달러에 인수한다고 발표했습니다. Tech Wire Asia는 Hugging Face 다운로드 순위 상위를 Alibaba, Moonshot, MiniMax 같은 중국 모델이 차지하고 있다는 점을 짚었습니다. NVIDIA는 모든 모델 개발사에 계속 열려 있겠다고 밝혔지만, 향후 정책 변화에 따른 호스팅 결정권 문제는 아직 명확하지 않습니다.
+- **증류(distillation) 논란**: DeepSeek V4.1 Flash가 발표된 같은 날, Anthropic은 중국 AI 기업들이 Claude 출력을 무단으로 수집해 학습에 썼다고 주장하는 위협 인텔리전스 보고서를 공개했습니다. TechCrunch는 이 보고서가 Alibaba, Moonshot AI, DeepSeek 등을 지목했다고 보도했습니다. 현재로서는 일방의 주장이지만, 기업이 모델을 도입할 때 법무·평판 리스크를 검토하는 항목이 될 수 있습니다.
+
+---
+
+## 🛠️ 개발자 관점에서 체크할 점
+
+### 1. "오픈"의 수준부터 구분하기
+- **가중치 공개 + 허용적 라이선스**(DeepSeek V4.1 Flash, MIT): 수정, 파인튜닝, 상업적 이용이 가장 자유롭습니다.
+- **가중치 공개 + 커뮤니티 라이선스**(MiniMax H3): 받을 수는 있지만 용도 제한과 신청 절차를 확인해야 합니다.
+- **오픈 모델 기반 호스팅 서비스**(H3 Max, Fugu Max): 결국 API 벤더를 하나 더 쓰는 것이므로 SLA, 약관, 데이터 처리 정책을 검토해야 합니다.
+
+### 2. 셀프호스팅 비용은 "활성 파라미터"가 아니라 "총 파라미터"로 계산하기
+- V4.1 Flash는 토큰당 활성 파라미터가 8~16B라 연산량은 가볍지만, **552B 전체 가중치를 메모리에 올려야** 합니다. 양자화를 하더라도 멀티 GPU 노드가 필요합니다.
+- KV 캐시가 줄어든 만큼 긴 컨텍스트에서의 동시 처리량은 좋아질 수 있습니다. 하지만 소규모 팀이라면 DeepSeek API나 서드파티 호스팅과 셀프호스팅의 총비용(TCO)을 먼저 비교해 보는 것이 현실적입니다.
+- H3는 모델 카드 예시가 4 GPU 기준이므로, 동영상 파이프라인을 직접 운영하려면 GPU 예산을 따로 잡아야 합니다.
+
+### 3. 데이터 거버넌스와 컴플라이언스
+- **가중치를 받아 사내 인프라에서 돌리면** 프롬프트와 데이터가 외부로 나가지 않습니다. 중국 모델을 쓸 때 가장 많이 나오는 우려는 이 방식으로 상당 부분 해소됩니다.
+- 반대로 **중국 업체의 호스팅 API를 직접 호출하면** 데이터가 어느 관할권에서 처리되는지 확인해야 합니다. 개인정보나 고객 데이터를 다룬다면 사내 보안·법무 검토를 거치는 것이 안전합니다.
+- Fugu Max처럼 **특정 지역(EU/EEA)에서 제공되지 않는 서비스**도 있습니다. 글로벌 서비스를 운영한다면 지역별로 대체 경로를 준비해야 합니다.
+
+### 4. 벤더 다변화는 "추상화 계층"부터
+- 이번 모델들은 대부분 OpenAI 호환 API나 vLLM/SGLang 서빙을 지원합니다. 애플리케이션 코드에서 모델 호출부를 **게이트웨이나 라우터 뒤로 분리**해 두면, 모델 교체나 폴백을 설정만으로 처리할 수 있습니다.
+- DeepSeek처럼 **모델 ID와 라우팅이 짧은 공지로 바뀌는** 경우도 있습니다. 모델 버전 고정, 변경 감지, 회귀 테스트를 운영 체크리스트에 넣어 두세요.
+
+### 5. 벤치마크는 참고만, 평가는 직접
+- 세 회사 모두 벤치마크 우위를 내세우지만 대부분 자체 발표 수치입니다. 자사 도메인 데이터로 **작은 평가 세트(eval)**를 만들어 품질, 지연 시간, 비용을 함께 측정하는 것이 가장 확실합니다.
+
+---
+
+## ✅ 마무리
+
+9월의 흐름을 요약하면 이렇습니다. **MIT 라이선스 대형 MoE를 저렴한 API와 함께 푸는 DeepSeek**, **커뮤니티 라이선스 가중치 위에 서드파티가 파생 서비스를 얹는 MiniMax H3 생태계**, 그리고 **오픈 모델들을 묶어 하나의 API처럼 파는 Sakana**까지, "오픈 모델"을 활용하는 방식 자체가 여러 갈래로 나뉘고 있습니다.
+
+개발자에게는 선택지가 늘어난 만큼 따져 볼 것도 많아졌습니다. 가중치 공개 여부, 라이선스, 데이터가 처리되는 위치, 총소유비용을 기준으로 모델을 분류해 두면, 다음 달 또 새 모델이 나오더라도 빠르게 판단할 수 있을 것입니다.
+
+---
+
+## 📚 참고 자료
+
+- [Introducing DeepSeek-V4.1-Flash (DeepSeek)](https://www.deepseek.com/en/news/deepseek-v4-1-flash/) — V4.1 Flash 공식 발표, 구조와 KV 캐시 절감, 라우팅 공지
+- [DeepSeek API Change Log](https://api-docs.deepseek.com/updates/) — 새 모델 ID와 기존 모델 라우팅, 피크/오프피크 요금제 변경 이력
+- [deepseek-ai/DeepSeek-V4.1-Flash (Hugging Face)](https://huggingface.co/deepseek-ai/DeepSeek-V4.1-Flash) — MIT 라이선스, 1M 컨텍스트, vLLM/SGLang 실행 방법
+- [DeepSeek releases V4.1-Flash, says it outperforms flagship V4-Pro (SiliconANGLE)](https://siliconangle.com/2026/09/10/deepseek-releases-v4-1-flash-says-it-outperforms-flagship-v4-pro/) — API 가격, 벤치마크 수치 보도
+- [Open General Intelligence: MiniMax H3 Is Now Open Source (MiniMax)](https://www.minimax.io/news/minimax-h3-open-source) — H3 오픈소스 공개 발표와 사양
+- [MiniMaxAI/MiniMax-H3 (Hugging Face)](https://huggingface.co/MiniMaxAI/MiniMax-H3) — H3 Community License, 배포 요구 사항
+- [Introducing H3 Max by fal (fal blog)](https://blog.fal.ai/introducing-h3-max-by-fal/) — fal이 재학습한 H3 Max 소개와 속도 수치
+- [MiniMax H3 Max (Morphic)](https://morphic.com/resources/models/minimax-h3-max) — H3 Max가 MiniMax 공식 모델이 아닌 파생 모델이라는 설명, 768p 해상도
+- [MiniMax H3 Max (fal)](https://fal.ai/minimax-h3-max) — 리더보드 순위와 9월 8일 자체 측정 생성 속도
+- [Sakana Fugu (Sakana AI)](https://sakana.ai/fugu/) — Fugu Max / Ultra v2 가격, 모델 풀, EU/EEA 제공 제한
+- [Sakana Fugu: One Model to Command Them All (Sakana AI)](https://sakana.ai/fugu-release/) — Fugu 최초 공개와 오케스트레이션 개념
+- [Sakana AI ships Fugu Max, cheaper routing over open models (AI Weekly)](https://aiweekly.co/alerts/sakana-ai-ships-fugu-max-cheaper-routing-over-open-models) — 9월 11일 출시와 벤치마크 검증 한계 지적
+- [Nvidia's Hugging Face acquisition (Tech Wire Asia)](https://techwireasia.com/2026/09/nvidia-hugging-face-acquisition-chinese-open-models/) — NVIDIA의 Hugging Face 인수와 중국 오픈 모델 유통 영향
+- [Anthropic details distillation campaigns from Alibaba, Moonshot AI, and DeepSeek (TechCrunch)](https://techcrunch.com/2026/09/10/anthropic-details-distillation-campaigns-from-alibaba-moonshot-ai-and-deepseek/) — 9월 10일 공개된 증류 의혹 보고서 보도
