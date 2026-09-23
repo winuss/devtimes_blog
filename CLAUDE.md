@@ -12,3 +12,4 @@ blog.devtimes.com 블로그 (Next.js 15, 정적 export → GitHub Pages).
 
 - `npm run dev`: 검증과 검색 인덱스 생성 후 dev 서버를 켠다. 새 글을 추가하면 서버를 재시작해야 상세 페이지가 열린다.
 - `main`에 push하면 곧바로 배포된다(`.github/workflows/deploy.yml`). push 전에 확인을 받는다.
+- 배포 워크플로는 `npm ci`를 쓰고, CI의 npm(Node 24 최신, npm 12+)은 lock 파일을 더 엄격하게 검사한다. 의존성을 바꾼 뒤에는 `npx npm@latest install --package-lock-only`로 lock 파일을 갱신하고 `npx npm@latest ci --dry-run`으로 확인한다.
