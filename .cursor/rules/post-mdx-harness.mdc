@@ -33,3 +33,7 @@ alwaysApply: false
 ## 썸네일
 
 - `thumbnail`이 없으면 메타데이터의 OG 이미지 URL이 어색해질 수 있다. 표지가 있으면 `public/posts/...` 규칙에 맞게 넣는 것을 권장한다.
+
+## AI 트렌드 글
+
+- 외부 기사 번역 금지, 출처 표기, 휴먼 톤(평어체), 게시 날짜 규칙은 `docs/ai-post-guide.md`를 따른다.

@@ -1,7 +1,7 @@
 ---
-title: "GPT-6 Sol·Luna 출시 정리: API 가격은 절반, 개발자가 지금 확인해야 할 것들"
+title: "GPT-6 Sol·Luna가 나왔다: API 가격이 반값이 됐고, 옮기기 전에 확인할 게 몇 가지 있다"
 date: 2026-09-23
-desc: "OpenAI가 2026년 9월 22일 GPT-6 Sol과 GPT-6 Luna를 공개했습니다. GPT-5.6 대비 절반 수준으로 내려간 API 가격, 공개된 벤치마크, 새 프롬프트 캐싱 기능, 마이그레이션 때 주의할 점을 개발자 관점에서 정리합니다."
+desc: "OpenAI가 9월 22일 GPT-6 Sol과 Luna를 내놨다. API 가격이 GPT-5.6의 절반 이하로 내려갔고, 캐싱도 크게 바뀌어서 옮기기 전에 확인할 것들을 개발자 입장에서 메모해 뒀다."
 tags:
   - AI
   - OpenAI
@@ -12,25 +12,23 @@ tags:
   - Trend
 ---
 
-OpenAI가 2026년 9월 22일(미국 태평양시 기준) **GPT-6 Sol**과 **GPT-6 Luna**를 공개했습니다. 이달 초인 9월 3일에 나온 플래그십 **GPT-6 Astra**에 이어, 그 아래 두 단계를 담당하는 모델이 새 세대로 바뀐 것입니다.
+OpenAI가 2026년 9월 22일(미국 태평양시 기준) GPT-6 Sol과 GPT-6 Luna를 공개했다. 9월 3일에 나온 플래그십 GPT-6 Astra 바로 아래 두 단계가 새 세대로 바뀐 셈이다.
 
-이번 발표에서 가장 눈에 띄는 건 성능보다 **가격**입니다. 두 모델 모두 API 단가가 GPT-5.6 세대의 절반 이하로 내려갔고, 프롬프트 캐싱 기능도 함께 크게 손봤습니다. 실제로 서비스에 LLM API를 붙여 쓰는 입장에서는 "새 모델이 얼마나 똑똑한가"보다 "기존 호출을 옮기면 비용과 품질이 어떻게 바뀌는가"가 더 중요한 질문일 것입니다. 이 글에서는 공개된 사실을 정리하고, 마이그레이션 전에 확인할 포인트를 짚어 보겠습니다.
+솔직히 발표를 보면서 벤치마크보다 가격표부터 봤다. 두 모델 다 API 단가가 GPT-5.6 세대의 절반 이하로 내려갔다. 서비스에 LLM API를 붙여 쓰는 입장에서는 "얼마나 똑똑해졌나"보다 "지금 호출을 옮기면 비용과 품질이 어떻게 되나"가 더 궁금하니까, 그 기준으로 정리해 봤다.
 
-## 🚀 무엇이 출시됐나: GPT-6 라인업 한눈에 보기
+## GPT-6 라인업은 이렇게 됐다
 
-GPT-6 세대는 이제 세 모델로 구성됩니다.
+이제 GPT-6는 세 모델이다. 맨 위가 Astra, 그 아래 Sol은 코딩이나 에이전트처럼 추론이 많이 필요한 작업을 겨냥한 중간 티어다. GitHub는 Sol을 대화형·에이전트형 코딩에 균형 잡힌 선택지로 소개했다. Luna는 요약, 정보 추출, 짧은 질의응답 같은 대량 처리용 경량 모델이고, GPT-6 제품군에서 가장 싸다.
 
-- **GPT-6 Astra**: 최상위 플래그십 모델입니다. 9월 3일 출시됐고, 이번 발표의 비교 기준점 역할을 합니다.
-- **GPT-6 Sol**: 코딩, 에이전트 작업처럼 복잡한 추론이 필요한 일에 맞춘 중간 티어입니다. GitHub는 Sol을 대화형·에이전트형 코딩에 균형 잡힌 선택지로 소개했습니다.
-- **GPT-6 Luna**: 요약, 정보 추출, 짧은 질의응답처럼 목표가 분명한 대량 처리 작업용 경량 모델입니다. GPT-6 제품군에서 가장 저렴합니다.
+OpenAI 설명으로는 Sol과 Luna도 Astra와 비슷한 방식으로 학습돼서 전문 업무, 사실성, 코딩, 컴퓨터 사용, 정렬(alignment) 쪽이 좋아졌다고 한다. Astra에서 처음 나온, 전문 용어를 줄인 간결한 응답 스타일도 그대로 이어받았다. API 모델 ID는 `gpt-6-sol`, `gpt-6-luna`다.
 
-OpenAI는 Sol과 Luna가 Astra를 만든 것과 비슷한 방법으로 학습돼, 전문 업무·사실성·코딩·컴퓨터 사용·정렬(alignment) 측면에서 개선됐다고 설명합니다. 또 Astra에서 도입된, 전문 용어를 줄인 간결한 응답 스타일도 이어받았다고 합니다.
+쓸 수 있는 곳도 꽤 넓다. OpenAI API에서는 바로 쓸 수 있고, ChatGPT Work와 Codex는 Plus, Pro, Business, Enterprise, Edu 사용자에게 순차 배포 중이다. MacRumors에 따르면 출시 시점엔 일반 Chat 모드에는 아직 안 들어갔다. Free·Go 사용자도 데스크톱 앱에서 Luna는 쓸 수 있다. GitHub Copilot에서는 VS Code, JetBrains, Xcode, Copilot CLI 등의 모델 선택기에 순차적으로 올라오고, Sol은 Pro+, Max, Business, Enterprise, Luna는 Pro 이상 요금제에서 쓸 수 있다.
 
-API 모델 ID는 각각 `gpt-6-sol`, `gpt-6-luna`입니다.
+GPT-5.6이 당장 없어지진 않았지만 더 이상 전면에 내세우는 모델은 아니라는 보도가 있었다. 공식 종료 일정은 아직 확인된 게 없다.
 
-## 💰 가격: GPT-5.6 대비 절반 이하
+## 가격이 제일 컸다
 
-이번 발표의 핵심입니다. 공식 모델 문서와 여러 매체 보도를 교차 확인한 100만 토큰당 표준 가격은 다음과 같습니다.
+공식 모델 문서와 여러 매체 보도를 맞춰 본 100만 토큰당 표준 가격은 이렇다.
 
 | 모델 | 입력 | 캐시 읽기 | 출력 | 이전 세대(입력/출력) |
 |---|---|---|---|---|
@@ -38,111 +36,70 @@ API 모델 ID는 각각 `gpt-6-sol`, `gpt-6-luna`입니다.
 | GPT-6 Sol | $2 | $0.20 | $10 | GPT-5.6 Sol: $4 / $20 |
 | GPT-6 Luna | $0.10 | $0.01 | $0.50 | GPT-5.6 Luna: $0.20 / $1.20 |
 
-몇 가지 포인트를 정리하면 다음과 같습니다.
+Sol은 입력·출력 모두 딱 50% 내려갔다. Luna는 입력 50%, 출력은 약 58% 인하라서 출력 토큰이 많은 워크로드일수록 이득이 더 크다. 캐시 읽기는 입력 단가의 10%(90% 할인)이고, 캐시 쓰기는 입력 단가의 1.25배(Sol $2.50, Luna $0.125)로 따로 과금된다.
 
-- **Sol은 입력·출력 모두 정확히 50% 인하**입니다.
-- **Luna는 입력 50%, 출력은 약 58% 인하**로, 출력 토큰이 많은 워크로드일수록 절감 폭이 더 큽니다.
-- 캐시 읽기는 입력 단가의 10%(90% 할인)이고, **캐시 쓰기는 입력 단가의 1.25배**(Sol $2.50, Luna $0.125)로 별도 과금됩니다.
-- VentureBeat 등 복수 매체에 따르면 OpenAI는 이번 가격이 출시 기념 프로모션이 아니라 **정식 가격**이라고 밝혔습니다.
-- OpenAI는 가격 인하 배경으로 캐싱과 추론 효율 개선을 들었습니다.
+이게 출시 기념 프로모션인가 싶었는데, VentureBeat 등 여러 매체에 따르면 OpenAI는 **정식 가격**이라고 밝혔다. 인하 배경으로는 캐싱과 추론 효율 개선을 들었다.
 
-한편 가격표만 보고 넘어가면 안 되는 조건도 있습니다. 공식 모델 문서에 따르면 **입력이 272K 토큰을 넘는 요청은 요청 전체에 입력·캐시 2배, 출력 1.5배 단가**가 적용됩니다. 또 지역 처리(regional processing)를 쓰면 10%가 추가됩니다. 긴 문서를 통째로 넣는 RAG나 대형 코드베이스 분석을 한다면 이 구간을 반드시 계산에 넣어야 합니다.
+다만 가격표만 보고 넘어가면 안 되는 조건이 있다. 공식 모델 문서상 **입력이 272K 토큰을 넘는 요청은 요청 전체에 입력·캐시 2배, 출력 1.5배 단가**가 붙는다. 지역 처리(regional processing)를 쓰면 10%가 더 붙는다. 긴 문서를 통째로 넣는 RAG나 큰 코드베이스 분석을 돌린다면 이 구간은 꼭 계산에 넣어야 한다.
 
-## 🧠 사양과 지원 기능
+## 사양, 그리고 API에서 걸리는 부분
 
-공식 모델 문서 기준으로 Sol과 Luna의 기본 사양은 거의 같습니다.
+공식 문서 기준으로 Sol과 Luna의 스펙은 거의 같다.
 
-- **컨텍스트 윈도우**: 1,050,000 토큰 (최대 입력 922K, 최대 출력 128K)
-- **지식 컷오프**: Sol 2026년 4월 20일, Luna 2026년 5월 18일
-- **지원 엔드포인트**: Chat Completions, Responses, Batch (Realtime, Assistants, 파인튜닝은 미지원)
-- **기능**: 스트리밍, Structured Outputs, 함수 호출, 파일 검색, 이미지 입력, 웹 검색, 프롬프트 캐싱
-- **reasoning.effort**: `none`, `low`, `medium`(기본값), `high`, `xhigh`, `max`의 6단계
+- 컨텍스트 윈도우: 1,050,000 토큰 (최대 입력 922K, 최대 출력 128K)
+- 지식 컷오프: Sol 2026년 4월 20일, Luna 2026년 5월 18일
+- 지원 엔드포인트: Chat Completions, Responses, Batch (Realtime, Assistants, 파인튜닝은 미지원)
+- 기능: 스트리밍, Structured Outputs, 함수 호출, 파일 검색, 이미지 입력, 웹 검색, 프롬프트 캐싱
+- `reasoning.effort`: `none`, `low`, `medium`(기본값), `high`, `xhigh`, `max`의 6단계
 
-여기서 개발자가 꼭 기억해야 할 제약이 하나 있습니다. **Chat Completions에서는 `reasoning_effort`가 `none`일 때만 함수 호출이 동작**합니다. 추론을 켠 상태에서 함수 호출이나 내장 도구를 쓰려면 Responses API로 가야 합니다. 아직 Chat Completions 기반으로 에이전트를 돌리고 있다면, 모델 ID만 바꿔서는 기대한 대로 동작하지 않을 수 있습니다.
+여기서 하나 걸리는 게 있었다. **Chat Completions에서는 `reasoning_effort`가 `none`일 때만 함수 호출이 동작**한다. 추론을 켠 채로 함수 호출이나 내장 도구를 쓰려면 Responses API로 가야 한다. 아직 Chat Completions로 에이전트를 돌리고 있다면 모델 ID만 바꿔서는 생각한 대로 안 돌 수 있다.
 
-## 📊 벤치마크: OpenAI가 내세운 수치와 해석
+## 벤치마크는 좀 걸러서 봤다
 
-OpenAI가 발표하고 여러 매체가 인용한 주요 수치는 다음과 같습니다.
+OpenAI가 발표하고 여러 매체가 인용한 수치는 이 정도다.
 
-- **DeepSWE v1.1**: Sol(max effort) 68.8%, Luna(max effort) 66.6%
-- **OSWorld 2.0**: Sol(xhigh) 60.5%
-- **AutomationBench 1.0.6**: Sol(xhigh) 33.2%
-- **Agents' Last Exam**: Sol(max effort) 56.4%
-- **사실성**: 내부 평가에서 Sol은 GPT-5.6 Sol보다 "about half as many mistakes"(실수가 약 절반)라고 OpenAI는 설명했습니다.
-- **Luna**: 높은 effort에서 GPT-5.6 Sol과 비슷한 사실성을 약 1/100 비용으로 낸다고 소개됐습니다.
+- DeepSWE v1.1: Sol(max effort) 68.8%, Luna(max effort) 66.6%
+- OSWorld 2.0: Sol(xhigh) 60.5%
+- AutomationBench 1.0.6: Sol(xhigh) 33.2%
+- Agents' Last Exam: Sol(max effort) 56.4%
 
-OpenAI는 여러 벤치마크에서 경쟁사 모델 대비 비용 효율이 높다는 점도 강조했습니다. TechCrunch 보도에 따르면 이번 발표는 Anthropic이 Claude Opus 5.5를 공개한 지 약 90분 뒤에 나왔는데, 그만큼 상위권 모델 경쟁이 치열하다는 방증입니다.
+사실성은 내부 평가에서 Sol이 GPT-5.6 Sol보다 "about half as many mistakes"라고 했다. 실수가 절반쯤이라는 얘기다. Luna는 높은 effort에서 GPT-5.6 Sol과 비슷한 사실성을 약 1/100 비용으로 낸다고 한다. 여러 벤치마크에서 경쟁 모델 대비 비용 효율이 좋다는 점도 강조했다. TechCrunch 보도로는 이번 발표가 Anthropic의 Claude Opus 5.5 공개 약 90분 뒤에 나왔다고 하니, 상위권 경쟁이 꽤 치열하긴 한 것 같다.
 
-다만 해석에는 주의가 필요합니다.
+그래도 이 숫자들은 대부분 OpenAI 자체 발표이고, 독립 검증은 아직 충분하지 않다. 좀 걸러 들을 필요가 있다. ComputingForGeeks는 DeepSWE나 OSWorld 2.0 같은 **일부 항목에서 Sol의 최고 점수가 GPT-5.6 Sol보다 낮다**고 짚으면서, 이번 세대 교체의 이득은 절대 성능보다 비용 대비 성능에 있다고 봤다.
 
-- 위 수치는 대부분 **OpenAI 자체 발표**이며, 독립 검증은 아직 충분하지 않습니다.
-- 일부 매체(ComputingForGeeks)는 DeepSWE나 OSWorld 2.0처럼 **일부 항목에서 Sol의 최고 점수가 GPT-5.6 Sol보다 낮다**고 지적하며, 이번 세대 교체의 이득은 절대 성능보다 **비용 대비 성능**에 있다고 분석했습니다.
-- 점수가 effort 설정(xhigh, max)마다 다르게 보고된다는 점도 봐야 합니다. max effort 점수를 기대하고 기본값(`medium`)으로 호출하면 체감 품질이 다를 수 있습니다.
+점수가 effort 설정(xhigh, max)마다 따로 보고된다는 것도 눈여겨볼 부분이다. max effort 점수를 기대하고 기본값 `medium`으로 호출하면 체감이 다를 수 있다. 개인적으로는 "확 똑똑해진 모델"보다 "비슷하거나 조금 나은 품질을 훨씬 싸게 쓰는 모델"로 보는 게 맞다고 본다.
 
-정리하면, "무조건 더 똑똑해진 모델"이라기보다 "비슷하거나 약간 나은 품질을 훨씬 싸게 쓰는 모델"로 보는 게 현실적입니다.
+## 캐싱 개편이 은근히 더 중요해 보인다
 
-## 🗄️ 함께 바뀐 프롬프트 캐싱
+실제 청구액에는 가격표만큼이나 캐싱 변화가 크게 작용할 것 같다. OpenAI는 GPT-6와 함께 캐싱을 꽤 크게 손봤다.
 
-가격표 못지않게 실무 비용에 영향이 큰 변화가 캐싱입니다. OpenAI는 GPT-6 출시와 함께 캐싱 기능을 대폭 개편했습니다.
+가장 반가운 건 명시적 캐시 브레이크포인트다. 어디까지를 캐시 prefix로 쓸지 직접 정할 수 있고, 공식 가이드에 따르면 `prompt_cache_options.mode`를 explicit로 두고 콘텐츠 블록에 `prompt_cache_breakpoint`를 다는 식이다. 캐시가 왜 빗나갔는지(도구 변경, 설정 변경 등)를 구조화된 사유로 알려주는 진단 기능도 생겼다. 시스템 지시문, 도구 정의, 참고 자료를 사용자 요청 전에 미리 처리해 두는 프리워밍(prewarming)으로 첫 응답 지연도 줄일 수 있다.
 
-- **명시적 캐시 브레이크포인트**: 어느 지점까지를 캐시 prefix로 쓸지 직접 지정할 수 있습니다. 공식 가이드에 따르면 `prompt_cache_options.mode`를 explicit로 두고 콘텐츠 블록에 `prompt_cache_breakpoint`를 다는 방식입니다.
-- **캐시 미스 진단**: 캐시가 왜 빗나갔는지(도구 변경, 설정 변경 등)를 구조화된 사유로 알려주는 진단 기능이 추가됐습니다.
-- **프리워밍(prewarming)**: 시스템 지시문, 도구 정의, 참고 자료를 사용자 요청 전에 미리 처리해 첫 응답 지연을 줄일 수 있습니다.
-- **`configuration_update`**: 대화 중간에 reasoning effort를 올리거나 내려도 캐시된 prefix를 유지할 수 있습니다. 요청 레벨의 `reasoning.effort`를 직접 바꾸면 캐시가 깨질 수 있으니, 입력 아이템으로 `configuration_update`를 추가하는 방식을 쓰라는 것이 가이드의 요지입니다.
-- **`allowed_tools`**: 도구 정의 목록은 그대로 두고 호출 가능한 도구만 제한해, 도구 on/off 때문에 캐시가 무효화되는 일을 막습니다.
-- 캐시된 prefix는 마지막 사용 후 최소 30분간 재사용 대상이 됩니다.
+실무에서 자주 부딪히던 부분도 챙겼다. 대화 중간에 effort를 바꾸고 싶을 때 요청 레벨의 `reasoning.effort`를 직접 바꾸면 캐시가 깨질 수 있으니, 입력 아이템으로 `configuration_update`를 넣으라는 게 가이드의 요지다. 그러면 캐시된 prefix가 유지된다. 도구도 마찬가지로, 정의 목록은 그대로 두고 `allowed_tools`로 호출 가능한 것만 제한하면 도구 on/off 때문에 캐시가 날아가는 걸 막을 수 있다. 캐시된 prefix는 마지막 사용 후 최소 30분 동안 재사용 대상이다.
 
-GitHub는 이런 캐싱 인프라 개선으로 OpenAI 모델 요청에서 새로 처리해야 하는 프롬프트 토큰 비중이 50% 넘게 줄었다고 밝혔습니다. 에이전트 루프처럼 같은 시스템 프롬프트와 도구 정의가 반복되는 워크로드라면, 단가 인하에 캐시 적중률 개선까지 겹쳐 실제 청구액은 표 가격 이상으로 줄어들 수 있습니다.
+GitHub는 이런 캐싱 인프라 개선으로 OpenAI 모델 요청에서 새로 처리해야 하는 프롬프트 토큰 비중이 50% 넘게 줄었다고 했다. 에이전트 루프처럼 같은 시스템 프롬프트와 도구 정의가 계속 반복되는 구조라면, 단가 인하에 캐시 적중률까지 겹쳐서 실제 비용은 표보다 더 내려갈 수도 있겠다.
 
-## 🌐 어디서 쓸 수 있나
+## 옮긴다면 이렇게 할 것 같다
 
-- **OpenAI API**: `gpt-6-sol`, `gpt-6-luna`로 즉시 사용 가능합니다.
-- **ChatGPT Work·Codex**: Plus, Pro, Business, Enterprise, Edu 사용자에게 순차 배포 중입니다. MacRumors에 따르면 출시 시점 기준으로 일반 Chat 모드에는 아직 들어가지 않았습니다.
-- **Free·Go 사용자**: 데스크톱 앱에서 GPT-6 Luna를 쓸 수 있습니다.
-- **GitHub Copilot**: VS Code, JetBrains, Xcode, Copilot CLI 등 모델 선택기에서 순차 제공됩니다. Sol은 Pro+, Max, Business, Enterprise, Luna는 Pro 이상 요금제에서 쓸 수 있습니다.
+우리 팀이 GPT-5.6 Sol/Luna를 쓰고 있다면, 모델 ID만 바꾸기 전에 이 정도는 확인할 것 같다.
 
-GPT-5.6은 당장 사라지지는 않았지만 더 이상 전면에 내세우는 모델은 아닌 것으로 보도됐습니다. 공식 종료 일정은 아직 확인되지 않았습니다.
+- 비용 재계산: 단순 계산으로도 절반 이하지만, 입력 272K 초과 요청 할증과 캐시 쓰기(1.25배) 비용은 따로 넣어서 본다.
+- API 방식: Chat Completions + 함수 호출 + 추론 조합이면 Responses API 전환은 사실상 필수다. Realtime, Assistants, 파인튜닝이 필요한 워크로드는 아직 못 옮긴다.
+- effort 재튜닝: 이전 설정을 그대로 가져오지 말고 작업별로 `none`~`max`를 다시 재 본다. Luna + 높은 effort가 Sol + 낮은 effort보다 싸고 충분한 경우도 있을 수 있다.
+- 캐시 친화적인 프롬프트 구조: 고정된 시스템 프롬프트와 도구 정의는 앞에, 가변 입력은 뒤에. 도구 on/off는 `allowed_tools`, effort 변경은 `configuration_update`로 처리하고, 진단 기능으로 캐시 미스 원인을 주기적으로 본다.
+- 자체 평가셋 회귀 테스트: 일부 항목에서 이전 세대보다 낮다는 분석도 있으니 기존 프롬프트와 정답셋으로 먼저 비교한다. 응답이 더 간결해졌다고 하니 출력 포맷에 기대는 파서도 같이 확인한다.
+- 모델 라우팅: 어려운 코딩·에이전트 작업은 Sol(또는 Astra), 분류·추출·요약 같은 대량 작업은 Luna로 나누는 게 비용 면에서 유리해 보인다.
 
-## 🛠️ 개발자 관점에서 체크할 점
+이번 출시는 성능이 확 뛰었다기보다 같은 일을 훨씬 싸게 하는 쪽에 가깝다고 느꼈다. 단가가 반 이하로 내려가고 캐싱 제어까지 좋아졌으니, 에이전트나 대량 처리 워크로드의 운영 비용은 꽤 달라질 수 있다.
 
-실제로 옮기기 전에 확인하면 좋을 항목을 정리했습니다.
+대신 Chat Completions 함수 호출 제약, 272K 초과 할증, 일부 벤치마크 역전 같은 디테일은 그냥 지나치기 쉽다. 독립적인 벤치마크가 더 나오면 Sol이 정말 GPT-5.6 Sol을 대체할 만한지, 그리고 GPT-5.6 종료 일정이 언제 나올지 계속 지켜볼 생각이다.
 
-1. **비용 재계산부터**
-   - GPT-5.6 Sol/Luna를 쓰고 있다면 단순 계산으로도 비용이 절반 이하로 줄어듭니다.
-   - 단, 입력 272K 초과 요청이 많다면 할증을 반영해야 하고, 캐시 쓰기(1.25배) 비용도 새로 계산에 넣어야 합니다.
+## 참고한 글
 
-2. **API 방식 점검**
-   - Chat Completions + 함수 호출 + 추론 조합을 쓰고 있다면 Responses API 전환이 사실상 필수입니다.
-   - Realtime, Assistants, 파인튜닝이 필요한 워크로드는 아직 옮길 수 없습니다.
-
-3. **effort 설정 재튜닝**
-   - 기본값은 `medium`입니다. 이전 모델에서 쓰던 설정을 그대로 가져오지 말고, 작업 유형별로 `none`~`max`를 다시 측정하는 편이 좋습니다.
-   - Luna + 높은 effort가 Sol + 낮은 effort보다 싸고 충분한 경우도 있을 수 있습니다.
-
-4. **캐시 친화적인 프롬프트 구조로 정리**
-   - 고정된 시스템 프롬프트와 도구 정의를 앞에 두고, 가변 입력은 뒤로 보냅니다.
-   - 도구 on/off는 `allowed_tools`로, effort 변경은 `configuration_update`로 처리해 prefix를 안정적으로 유지합니다.
-   - 진단 기능으로 캐시 미스 원인을 주기적으로 확인하는 습관을 들이면 좋습니다.
-
-5. **자체 평가셋으로 회귀 테스트**
-   - 벤치마크는 참고일 뿐입니다. 일부 항목에서는 이전 세대 최고 점수보다 낮다는 분석도 있으니, 기존 프롬프트와 정답셋으로 품질을 직접 비교한 뒤 트래픽을 옮기는 것이 안전합니다.
-   - 응답 스타일이 더 간결해졌다고 하니, 출력 포맷에 의존하는 파서가 있다면 함께 확인해야 합니다.
-
-6. **모델 포트폴리오 설계**
-   - 어려운 코딩·에이전트 작업은 Sol(또는 Astra), 분류·추출·요약 같은 대량 작업은 Luna로 나누는 라우팅 구조가 비용 면에서 유리합니다.
-
-## ✅ 마무리
-
-GPT-6 Sol과 Luna는 "성능 혁명"보다는 **"같은 일을 훨씬 싸게"** 하는 쪽에 무게가 실린 출시입니다. API 단가가 절반 이하로 내려갔고, 캐싱 제어 기능까지 강화되면서 에이전트나 대량 처리 워크로드의 운영 비용 구조가 꽤 달라질 수 있습니다.
-
-반대로 Chat Completions에서의 함수 호출 제약, 272K 초과 요청 할증, 일부 벤치마크에서의 성능 역전 같은 디테일은 그냥 넘기기 쉬운 부분입니다. 모델 ID만 바꾸기보다는 비용 계산, API 방식, effort 설정, 캐시 구조, 품질 회귀 테스트를 한 번씩 점검하고 옮기는 것을 권합니다.
-
-## 📚 참고 자료
-
-- [Announcing GPT-6 Sol and GPT-6 Luna - OpenAI Developer Community](https://community.openai.com/t/announcing-gpt-6-sol-and-gpt-6-luna/1399925) — 개발자 커뮤니티 공식 공지, 제공 범위
+- [Announcing GPT-6 Sol and GPT-6 Luna - OpenAI Developer Community](https://community.openai.com/t/announcing-gpt-6-sol-and-gpt-6-luna/1399925) — 커뮤니티 공식 공지, 제공 범위
 - [GPT-6 Sol 모델 문서 | OpenAI API](https://developers.openai.com/api/docs/models/gpt-6-sol) — 컨텍스트, 가격, 지원 기능, effort 단계
 - [GPT-6 Luna 모델 문서 | OpenAI API](https://developers.openai.com/api/docs/models/gpt-6-luna) — Luna 사양과 272K 초과 할증 규칙
-- [Prompt caching | OpenAI API](https://developers.openai.com/api/docs/guides/prompt-caching) — 명시적 브레이크포인트, 진단, 프리워밍 가이드
+- [Prompt caching | OpenAI API](https://developers.openai.com/api/docs/guides/prompt-caching) — 브레이크포인트, 진단, 프리워밍 가이드
 - [OpenAI launches GPT-6 Sol and Luna | TechCrunch](https://techcrunch.com/2026/09/22/openai-launches-gpt-6-sol-and-luna/) — 출시 시각, 경쟁 구도, 제공 범위
 - [OpenAI releases GPT-6 Sol and Luna models, slashing API costs 50% or more | VentureBeat](https://venturebeat.com/technology/openai-releases-gpt-6-sol-and-luna-models-slashing-api-costs-50-or-more) — 가격 비교, 벤치마크, 정식 가격 여부
 - [OpenAI Releases GPT-6 Sol and Luna | MarkTechPost](https://www.marktechpost.com/2026/09/22/openai-releases-gpt-6-sol-and-luna-50-cheaper-api-pricing-and-benchmarks/) — 벤치마크 수치와 캐싱 기능 요약
