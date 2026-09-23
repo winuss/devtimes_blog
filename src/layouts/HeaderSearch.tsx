@@ -312,9 +312,13 @@ export const HeaderSearch = () => {
           }}
           className={cn(
             'fixed z-50 flex flex-col overflow-hidden bg-background shadow-2xl',
-            'inset-0 sm:inset-auto sm:left-1/2 sm:top-[12vh] sm:w-[calc(100%-2rem)] sm:max-w-xl sm:-translate-x-1/2',
+            'inset-0 sm:inset-x-0 sm:bottom-auto sm:top-[12vh] sm:mx-auto sm:w-[calc(100%-2rem)] sm:max-w-xl',
             'sm:max-h-[72vh] sm:rounded-2xl sm:border sm:border-border',
-            'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 sm:data-[state=closed]:zoom-out-95 sm:data-[state=open]:zoom-in-95'
+            // 위에서 아래로 슬라이드
+            'ease-out data-[state=closed]:duration-200 data-[state=open]:duration-300 data-[state=open]:animate-in data-[state=closed]:animate-out',
+            'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
+            'data-[state=closed]:slide-out-to-top-full data-[state=open]:slide-in-from-top-full',
+            'sm:data-[state=closed]:slide-out-to-top-8 sm:data-[state=open]:slide-in-from-top-8'
           )}
         >
           <DialogPrimitive.Title className='sr-only'>블로그 검색</DialogPrimitive.Title>
